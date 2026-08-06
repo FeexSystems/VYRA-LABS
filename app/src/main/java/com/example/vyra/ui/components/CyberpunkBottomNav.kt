@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.MonetizationOn
@@ -38,6 +39,7 @@ import com.example.vyra.theme.TextMuted
 
 sealed class NavItem(val route: String, val label: String, val icon: ImageVector) {
     object Dashboard : NavItem("dashboard", "Overview", Icons.Default.Dashboard)
+    object Profile : NavItem("profile", "Profile", Icons.Default.AccountCircle)
     object Agents : NavItem("agents", "AI Agents", Icons.Default.Psychology)
     object FanDna : NavItem("fan_dna", "Fan DNA", Icons.Default.People)
     object Optimizer : NavItem("optimizer", "Optimizer", Icons.Default.AutoAwesome)
@@ -54,6 +56,7 @@ fun CyberpunkBottomNav(
 
     val items = listOf(
         NavItem.Dashboard,
+        NavItem.Profile,
         NavItem.Agents,
         NavItem.FanDna,
         NavItem.Optimizer,

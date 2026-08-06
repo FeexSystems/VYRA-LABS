@@ -115,6 +115,11 @@ fun VoiceOrb(
                 color = Color.LightGray,
                 fontSize = 11.sp
             )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Real-time audio input/output waveform animation
+            RealtimeWaveform(isActive = isActive)
         }
     }
 }

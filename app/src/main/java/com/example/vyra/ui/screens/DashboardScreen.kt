@@ -188,7 +188,7 @@ fun DashboardScreen(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = "VYRA AI COMMAND CENTER",
+                            text = "Go VYRA COMMAND CENTER",
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Black,

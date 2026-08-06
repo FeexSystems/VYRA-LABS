@@ -95,6 +95,15 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
     private val _glowEffects = MutableStateFlow(true)
     val glowEffects: StateFlow<Boolean> = _glowEffects.asStateFlow()
 
+    private val _privacyModeEnabled = MutableStateFlow(false)
+    val privacyModeEnabled: StateFlow<Boolean> = _privacyModeEnabled.asStateFlow()
+
+    private val _cloudSyncEnabled = MutableStateFlow(true)
+    val cloudSyncEnabled: StateFlow<Boolean> = _cloudSyncEnabled.asStateFlow()
+
+    private val _onboardingCompleted = MutableStateFlow(false)
+    val onboardingCompleted: StateFlow<Boolean> = _onboardingCompleted.asStateFlow()
+
     private var playbackJob: Job? = null
 
     init {
@@ -107,6 +116,13 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
                         "creator_bio" -> _bio.value = p.value
                         "voice_mode_enabled" -> _voiceModeEnabled.value = p.value.toBoolean()
                         "glow_effects_enabled" -> _glowEffects.value = p.value.toBoolean()
+                        "onboarding_completed" -> _onboardingCompleted.value = p.value.toBoolean()
+                        "privacy_mode_enabled" -> {
+                            val enabled = p.value.toBoolean()
+                            _privacyModeEnabled.value = enabled
+                            if (enabled) _cloudSyncEnabled.value = false
+                        }
+                        "cloud_sync_enabled" -> _cloudSyncEnabled.value = p.value.toBoolean()
                         "selected_personality_id" -> {
                             VoicePersonalities.all.find { it.id == p.value }?.let {
                                 _selectedPersonality.value = it
@@ -151,6 +167,35 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
     fun toggleGlowEffects(enabled: Boolean) {
         _glowEffects.value = enabled
         savePreferenceToRoom("glow_effects_enabled", enabled.toString())
+    }
+
+    fun togglePrivacyMode(enabled: Boolean) {
+        _privacyModeEnabled.value = enabled
+        _cloudSyncEnabled.value = !enabled
+        savePreferenceToRoom("privacy_mode_enabled", enabled.toString())
+        savePreferenceToRoom("cloud_sync_enabled", (!enabled).toString())
+
+        if (enabled) {
+            viewModelScope.launch {
+                repository.clearVoiceInteractions()
+            }
+        }
+    }
+
+    fun clearLocalInteractionHistory() {
+        viewModelScope.launch {
+            repository.clearVoiceInteractions()
+        }
+    }
+
+    fun setOnboardingCompleted(completed: Boolean) {
+        _onboardingCompleted.value = completed
+        savePreferenceToRoom("onboarding_completed", completed.toString())
+    }
+
+    fun resetOnboarding() {
+        _onboardingCompleted.value = false
+        savePreferenceToRoom("onboarding_completed", "false")
     }
 
     private fun savePreferenceToRoom(key: String, value: String) {

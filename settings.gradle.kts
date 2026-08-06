@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VYRA AI"
+rootProject.name = "Go VYRA"
 include(":app")

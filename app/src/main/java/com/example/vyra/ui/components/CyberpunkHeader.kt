@@ -105,7 +105,7 @@ fun CyberpunkHeader(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "VYRA AI",
+                            text = "Go VYRA",
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,

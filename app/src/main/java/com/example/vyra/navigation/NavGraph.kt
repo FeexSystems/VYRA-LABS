@@ -11,12 +11,14 @@ import com.example.vyra.ui.screens.DashboardScreen
 import com.example.vyra.ui.screens.FanDnaScreen
 import com.example.vyra.ui.screens.MonetizationScreen
 import com.example.vyra.ui.screens.OptimizerScreen
+import com.example.vyra.ui.screens.ProfileScreen
 import com.example.vyra.ui.screens.SettingsScreen
 import com.example.vyra.ui.viewmodels.AgentChatViewModel
 import com.example.vyra.ui.viewmodels.ContentOptimizerViewModel
 import com.example.vyra.ui.viewmodels.DashboardViewModel
 import com.example.vyra.ui.viewmodels.FanDnaViewModel
 import com.example.vyra.ui.viewmodels.MonetizationViewModel
+import com.example.vyra.ui.viewmodels.ProfileViewModel
 import com.example.vyra.ui.viewmodels.SettingsViewModel
 
 @Composable
@@ -24,6 +26,7 @@ fun VyraNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     dashboardViewModel: DashboardViewModel,
+    profileViewModel: ProfileViewModel,
     agentChatViewModel: AgentChatViewModel,
     fanDnaViewModel: FanDnaViewModel,
     optimizerViewModel: ContentOptimizerViewModel,
@@ -45,6 +48,10 @@ fun VyraNavGraph(
             )
         }
 
+        composable(NavItem.Profile.route) {
+            ProfileScreen(viewModel = profileViewModel)
+        }
+
         composable(NavItem.Agents.route) {
             AgentsScreen(viewModel = agentChatViewModel)
         }
@@ -58,11 +65,17 @@ fun VyraNavGraph(
         }
 
         composable(NavItem.Monetization.route) {
-            MonetizationScreen(viewModel = monetizationViewModel)
+            MonetizationScreen(
+                viewModel = monetizationViewModel,
+                profileViewModel = profileViewModel
+            )
         }
 
         composable(NavItem.Settings.route) {
-            SettingsScreen(viewModel = settingsViewModel)
+            SettingsScreen(
+                viewModel = settingsViewModel,
+                profileViewModel = profileViewModel
+            )
         }
     }
 }
