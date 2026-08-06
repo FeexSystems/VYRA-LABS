@@ -13,6 +13,7 @@ import com.example.vyra.ui.screens.MonetizationScreen
 import com.example.vyra.ui.screens.OptimizerScreen
 import com.example.vyra.ui.screens.ProfileScreen
 import com.example.vyra.ui.screens.SettingsScreen
+import com.example.vyra.ui.screens.UserProfileScreen
 import com.example.vyra.ui.viewmodels.AgentChatViewModel
 import com.example.vyra.ui.viewmodels.ContentOptimizerViewModel
 import com.example.vyra.ui.viewmodels.DashboardViewModel
@@ -49,7 +50,7 @@ fun VyraNavGraph(
         }
 
         composable(NavItem.Profile.route) {
-            ProfileScreen(viewModel = profileViewModel)
+            UserProfileScreen(viewModel = profileViewModel)
         }
 
         composable(NavItem.Agents.route) {

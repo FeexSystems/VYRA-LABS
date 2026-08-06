@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val database = VyraDatabase.getDatabase(this)
-        val repository = VyraRepository(database.vyraDao())
+        val repository = VyraRepository(database.vyraDao(), database.billingCurrencyDao())
 
         val dashboardViewModel = DashboardViewModel(repository)
         val profileViewModel = ProfileViewModel(repository)

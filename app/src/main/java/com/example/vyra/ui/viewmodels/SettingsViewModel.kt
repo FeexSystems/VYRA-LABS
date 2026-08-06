@@ -104,9 +104,20 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
     private val _onboardingCompleted = MutableStateFlow(false)
     val onboardingCompleted: StateFlow<Boolean> = _onboardingCompleted.asStateFlow()
 
+    private val _selectedBillingCurrency = MutableStateFlow("NGN")
+    val selectedBillingCurrency: StateFlow<String> = _selectedBillingCurrency.asStateFlow()
+
     private var playbackJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            repository.billingCurrency.collectLatest { billingPref ->
+                if (billingPref != null && billingPref.currencyCode.isNotBlank()) {
+                    _selectedBillingCurrency.value = billingPref.currencyCode
+                }
+            }
+        }
+
         viewModelScope.launch {
             repository.userPreferences.collectLatest { prefs ->
                 prefs.forEach { p ->
@@ -117,6 +128,7 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
                         "voice_mode_enabled" -> _voiceModeEnabled.value = p.value.toBoolean()
                         "glow_effects_enabled" -> _glowEffects.value = p.value.toBoolean()
                         "onboarding_completed" -> _onboardingCompleted.value = p.value.toBoolean()
+                        "selected_billing_currency" -> _selectedBillingCurrency.value = p.value
                         "privacy_mode_enabled" -> {
                             val enabled = p.value.toBoolean()
                             _privacyModeEnabled.value = enabled
@@ -131,6 +143,13 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
                     }
                 }
             }
+        }
+    }
+
+    fun setBillingCurrency(currencyCode: String) {
+        _selectedBillingCurrency.value = currencyCode
+        viewModelScope.launch {
+            repository.saveBillingCurrencyPreference(currencyCode)
         }
     }
 

@@ -106,10 +106,10 @@ fun CyberpunkHeader(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "Go VYRA",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            letterSpacing = 1.sp
+                            color = NeonCyan,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 20.sp,
+                            letterSpacing = 1.5.sp
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(

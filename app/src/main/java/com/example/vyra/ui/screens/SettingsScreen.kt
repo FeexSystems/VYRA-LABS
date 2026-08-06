@@ -246,6 +246,7 @@ fun SettingsScreen(
                                     },
                                     onClick = {
                                         profileViewModel.setCurrency(currency.code)
+                                        viewModel.setBillingCurrency(currency.code)
                                         dropdownExpanded = false
                                     },
                                     modifier = Modifier.testTag("dropdown_item_currency_${currency.code}")
@@ -276,7 +277,10 @@ fun SettingsScreen(
                                         if (isSelected) NeonGreen else CyberBorder,
                                         RoundedCornerShape(10.dp)
                                     )
-                                    .clickable { profileViewModel.setCurrency(currency.code) }
+                                    .clickable {
+                                        profileViewModel.setCurrency(currency.code)
+                                        viewModel.setBillingCurrency(currency.code)
+                                    }
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {

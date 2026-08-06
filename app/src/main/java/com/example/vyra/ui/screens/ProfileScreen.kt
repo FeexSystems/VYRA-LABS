@@ -9,6 +9,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -106,13 +108,7 @@ import com.example.vyra.theme.TextSecondary
 import com.example.vyra.ui.components.CyberpunkCard
 import com.example.vyra.ui.viewmodels.ProfileViewModel
 
-@Composable
-fun UserProfileScreen(
-    viewModel: ProfileViewModel
-) {
-    ProfileScreen(viewModel = viewModel)
-}
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel
@@ -137,108 +133,7 @@ fun ProfileScreen(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. ROLE SWITCHER BAR (CREATOR vs FAN)
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("card_role_switcher"),
-                colors = CardDefaults.cardColors(containerColor = CyberSurface),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    Brush.horizontalGradient(listOf(NeonCyan, ElectricMagenta))
-                )
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = "PROFILE INTERFACE MODE",
-                        color = NeonCyan,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(CyberBg)
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // CREATOR TAB
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    if (activeRole == UserRole.CREATOR)
-                                        Brush.horizontalGradient(listOf(NeonCyan, ElectricMagenta))
-                                    else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
-                                )
-                                .clickable { viewModel.switchRole(UserRole.CREATOR) }
-                                .padding(vertical = 10.dp)
-                                .testTag("tab_creator_mode"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.MonetizationOn,
-                                    contentDescription = null,
-                                    tint = if (activeRole == UserRole.CREATOR) Color.Black else TextMuted,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "CREATOR PROFILE",
-                                    color = if (activeRole == UserRole.CREATOR) Color.Black else TextSecondary,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.width(6.dp))
-
-                        // FAN TAB
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    if (activeRole == UserRole.FAN)
-                                        Brush.horizontalGradient(listOf(QuantumViolet, NeonGreen))
-                                    else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
-                                )
-                                .clickable { viewModel.switchRole(UserRole.FAN) }
-                                .padding(vertical = 10.dp)
-                                .testTag("tab_fan_mode"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.People,
-                                    contentDescription = null,
-                                    tint = if (activeRole == UserRole.FAN) Color.Black else TextMuted,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "FAN PROFILE",
-                                    color = if (activeRole == UserRole.FAN) Color.Black else TextSecondary,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // 2. MAIN HEADER CARD (DYNAMIC BASED ON ROLE)
+        // MAIN PROFILE HEADER CARD (.profile-header)
         item {
             CyberpunkCard(
                 modifier = Modifier
@@ -249,16 +144,83 @@ fun ProfileScreen(
                 accentGlow = if (activeRole == UserRole.CREATOR) ElectricMagenta.copy(alpha = 0.25f) else QuantumViolet.copy(alpha = 0.25f)
             ) {
                 Column {
+                    // 1. BRAND LOGO HEADER ROW ("Go VYRA")
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Brush.radialGradient(listOf(NeonCyan, ElectricMagenta)))
+                                    .border(1.5.dp, NeonCyan, RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoAwesome,
+                                    contentDescription = "Go VYRA Brand Logo",
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Column {
+                                Text(
+                                    text = "Go VYRA",
+                                    color = NeonCyan,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.5.sp
+                                )
+                                Text(
+                                    text = "AI CREATOR NETWORK & PERSONA HUB",
+                                    color = TextMuted,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.8.sp
+                                )
+                            }
+                        }
+
+                        IconButton(
+                            onClick = { showEditProfileDialog = true },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(CyberSurface)
+                                .border(1.dp, CyberBorder, CircleShape)
+                                .testTag("btn_edit_profile")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Profile",
+                                tint = TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+
+                    Divider(color = CyberBorder, thickness = 1.dp)
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 2. AVATAR & PERSONA IDENTITY
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             // Avatar Box
                             Box(
                                 modifier = Modifier
-                                    .size(64.dp)
+                                    .size(60.dp)
                                     .clip(CircleShape)
                                     .background(
                                         Brush.radialGradient(
@@ -279,18 +241,18 @@ fun ProfileScreen(
                                     imageVector = if (activeRole == UserRole.CREATOR) Icons.Default.Psychology else Icons.Default.Person,
                                     contentDescription = "Avatar",
                                     tint = if (activeRole == UserRole.CREATOR) NeonCyan else NeonGreen,
-                                    modifier = Modifier.size(36.dp)
+                                    modifier = Modifier.size(34.dp)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
 
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = if (activeRole == UserRole.CREATOR) creator.name else fan.name,
                                         color = Color.White,
-                                        fontSize = 18.sp,
+                                        fontSize = 17.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
@@ -298,7 +260,7 @@ fun ProfileScreen(
                                         imageVector = Icons.Default.Verified,
                                         contentDescription = "Verified",
                                         tint = NeonCyan,
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
 
@@ -311,7 +273,7 @@ fun ProfileScreen(
 
                                 Spacer(modifier = Modifier.height(4.dp))
 
-                                // Neon Persona Indicator Pill
+                                // Persona Indicator Pill
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Box(
                                         modifier = Modifier
@@ -344,26 +306,9 @@ fun ProfileScreen(
                                 }
                             }
                         }
-
-                        IconButton(
-                            onClick = { showEditProfileDialog = true },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(CyberSurface)
-                                .border(1.dp, CyberBorder, CircleShape)
-                                .testTag("btn_edit_profile")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Profile",
-                                tint = TextPrimary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
                     }
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     // Bio / Tagline Text
                     Text(
@@ -372,6 +317,199 @@ fun ProfileScreen(
                         fontSize = 12.sp,
                         lineHeight = 16.sp
                     )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 3. HORIZONTAL SEGMENTED CONTROL PERSONA SWITCHER WITH NEON GLOWING DOT INDICATOR
+                    Text(
+                        text = "PERSONA MODE SWITCHER",
+                        color = TextMuted,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("card_role_switcher")
+                            .testTag("segmented_role_switcher"),
+                        colors = CardDefaults.cardColors(containerColor = CyberBg),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, CyberBorder)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            // CREATOR SEGMENT
+                            val isCreatorMode = activeRole == UserRole.CREATOR
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        if (isCreatorMode)
+                                            Brush.horizontalGradient(listOf(NeonCyan.copy(alpha = 0.35f), ElectricMagenta.copy(alpha = 0.35f)))
+                                        else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (isCreatorMode) NeonCyan else Color.Transparent,
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .clickable { viewModel.switchRole(UserRole.CREATOR) }
+                                    .padding(vertical = 10.dp)
+                                    .testTag("tab_creator_mode"),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    // Neon Glowing Dot Indicator for Active Creator Mode
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(if (isCreatorMode) NeonCyan else TextMuted.copy(alpha = 0.3f))
+                                            .border(
+                                                if (isCreatorMode) 2.dp else 0.dp,
+                                                if (isCreatorMode) ElectricMagenta else Color.Transparent,
+                                                CircleShape
+                                            )
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "CREATOR MODE",
+                                        color = if (isCreatorMode) Color.White else TextSecondary,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isCreatorMode) FontWeight.ExtraBold else FontWeight.Medium
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(6.dp))
+
+                            // FAN SEGMENT
+                            val isFanMode = activeRole == UserRole.FAN
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        if (isFanMode)
+                                            Brush.horizontalGradient(listOf(QuantumViolet.copy(alpha = 0.35f), NeonGreen.copy(alpha = 0.35f)))
+                                        else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (isFanMode) NeonGreen else Color.Transparent,
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .clickable { viewModel.switchRole(UserRole.FAN) }
+                                    .padding(vertical = 10.dp)
+                                    .testTag("tab_fan_mode"),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    // Neon Glowing Dot Indicator for Active Fan Mode
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(if (isFanMode) NeonGreen else TextMuted.copy(alpha = 0.3f))
+                                            .border(
+                                                if (isFanMode) 2.dp else 0.dp,
+                                                if (isFanMode) QuantumViolet else Color.Transparent,
+                                                CircleShape
+                                            )
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "FAN MODE",
+                                        color = if (isFanMode) Color.White else TextSecondary,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isFanMode) FontWeight.ExtraBold else FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 4. INTERACTIVE ROUNDED NEON CHIPS FOR SOCIAL PLATFORM HANDLES (BENEATH SWITCHER)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "SOCIAL PLATFORM HANDLES",
+                            color = TextMuted,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "TAP TO EDIT",
+                            color = NeonCyan,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        userProfile.platforms.forEach { platform ->
+                            val isConnected = platform.isConnected
+                            val chipAccent = if (isConnected) NeonCyan else TextMuted
+
+                            Box(
+                                modifier = Modifier
+                                    .testTag("chip_social_${platform.id}")
+                                    .testTag("social_chip_${platform.id}")
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(if (isConnected) chipAccent.copy(alpha = 0.15f) else CyberSurface)
+                                    .border(
+                                        1.dp,
+                                        if (isConnected) chipAccent else CyberBorder,
+                                        RoundedCornerShape(20.dp)
+                                    )
+                                    .clickable { showLinkPlatformDialog = platform }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Link,
+                                        contentDescription = null,
+                                        tint = chipAccent,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Text(
+                                        text = "${platform.name}: ${platform.handle}",
+                                        color = if (isConnected) Color.White else TextSecondary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit handle",
+                                        tint = chipAccent,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(14.dp))
 
