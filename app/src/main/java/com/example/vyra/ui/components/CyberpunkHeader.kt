@@ -130,8 +130,12 @@ fun CyberpunkHeader(
             }
 
             // ElevenLabs Voice Mode Toggle Button
+            val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
             IconButton(
-                onClick = onVoiceToggle,
+                onClick = {
+                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                    onVoiceToggle()
+                },
                 modifier = Modifier
                     .testTag("header_voice_toggle")
                     .clip(CircleShape)

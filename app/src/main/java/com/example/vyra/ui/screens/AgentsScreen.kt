@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,6 +54,7 @@ import com.example.vyra.theme.NeonGreen
 import com.example.vyra.theme.QuantumViolet
 import com.example.vyra.theme.TextMuted
 import com.example.vyra.theme.TextSecondary
+import com.example.vyra.ui.components.VoiceInteractionHistoryComponent
 import com.example.vyra.ui.components.VoiceOrb
 import com.example.vyra.ui.viewmodels.AgentChatViewModel
 
@@ -59,7 +63,12 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
     val selectedAgent by viewModel.selectedAgent.collectAsState()
     val messages by viewModel.messages.collectAsState()
     val isVoiceActive by viewModel.isVoiceActive.collectAsState()
+    val voiceHistory by viewModel.voiceInteractions.collectAsState()
+
     var inputText by remember { mutableStateOf("") }
+    var showVoiceHistory by remember { mutableStateOf(false) }
+
+    val haptic = LocalHapticFeedback.current
 
     Column(
         modifier = Modifier
@@ -70,7 +79,7 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
         // Agent Selector Row
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 6.dp)
         ) {
             items(AiAgents.list) { agent ->
                 val isSelected = selectedAgent.id == agent.id
@@ -84,7 +93,10 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                             if (isSelected) agent.primaryColor else CyberBorder,
                             RoundedCornerShape(12.dp)
                         )
-                        .clickable { viewModel.selectAgent(agent) }
+                        .clickable {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.selectAgent(agent)
+                        }
                         .padding(horizontal = 14.dp, vertical = 8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -115,26 +127,65 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                 .border(1.dp, selectedAgent.primaryColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                 .padding(12.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Psychology,
-                    contentDescription = null,
-                    tint = selectedAgent.primaryColor,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(
-                        text = selectedAgent.title,
-                        color = selectedAgent.primaryColor,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Psychology,
+                        contentDescription = null,
+                        tint = selectedAgent.primaryColor,
+                        modifier = Modifier.size(24.dp)
                     )
-                    Text(
-                        text = selectedAgent.description,
-                        color = TextSecondary,
-                        fontSize = 11.sp
-                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = selectedAgent.title,
+                            color = selectedAgent.primaryColor,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                        Text(
+                            text = selectedAgent.description,
+                            color = TextSecondary,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+
+                // Voice History Toggle Button
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (showVoiceHistory) NeonCyan.copy(alpha = 0.2f) else CyberSurface)
+                        .border(1.dp, if (showVoiceHistory) NeonCyan else CyberBorder, RoundedCornerShape(8.dp))
+                        .clickable {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            showVoiceHistory = !showVoiceHistory
+                        }
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                        .testTag("btn_toggle_voice_history")
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = "Voice History",
+                            tint = if (showVoiceHistory) NeonCyan else TextMuted,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Voice History (${voiceHistory.size})",
+                            color = if (showVoiceHistory) NeonCyan else TextMuted,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -145,9 +196,22 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
         if (selectedAgent.id == "voice_agent" || isVoiceActive) {
             VoiceOrb(
                 isActive = isVoiceActive,
-                onToggle = { viewModel.toggleVoiceMode() }
+                onToggle = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.toggleVoiceMode()
+                }
             )
             Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Room Database Voice History Drawer / Card
+        if (showVoiceHistory) {
+            VoiceInteractionHistoryComponent(
+                interactions = voiceHistory,
+                onDeleteInteraction = { viewModel.deleteVoiceInteraction(it) },
+                onClearAll = { viewModel.clearVoiceHistory() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
         }
 
         // Chat Message List
@@ -215,6 +279,7 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                         .background(CyberSurface)
                         .border(1.dp, CyberBorder, RoundedCornerShape(8.dp))
                         .clickable {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             inputText = prompt
                             viewModel.sendMessage(prompt)
                             inputText = ""
@@ -258,6 +323,7 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
             IconButton(
                 onClick = {
                     if (inputText.isNotBlank()) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         viewModel.sendMessage(inputText)
                         inputText = ""
                     }
@@ -277,3 +343,4 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
         }
     }
 }
+

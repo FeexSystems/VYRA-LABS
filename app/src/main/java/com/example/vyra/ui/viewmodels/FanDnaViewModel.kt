@@ -36,4 +36,33 @@ class FanDnaViewModel(private val repository: VyraRepository) : ViewModel() {
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
     }
+
+    fun addNewFan(name: String, username: String, tier: String, platform: String, spend: Double) {
+        viewModelScope.launch {
+            val fan = FanProfile(
+                id = "fan_${System.currentTimeMillis()}",
+                username = if (username.startsWith("@")) username else "@$username",
+                name = name.ifBlank { "Anonymous Fan" },
+                tier = tier,
+                lifetimeSpend = spend,
+                engagementScore = (70..99).random(),
+                sentiment = if (spend > 500) "Superfan" else "Positive",
+                primaryPlatform = platform,
+                lastActive = "Just now"
+            )
+            repository.addFanProfile(fan)
+        }
+    }
+
+    fun updateTier(fanId: String, newTier: String) {
+        viewModelScope.launch {
+            repository.updateFanTier(fanId, newTier)
+        }
+    }
+
+    fun deleteFan(fanId: String) {
+        viewModelScope.launch {
+            repository.deleteFanProfile(fanId)
+        }
+    }
 }

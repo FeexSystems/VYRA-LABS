@@ -3,9 +3,11 @@ package com.example.vyra.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vyra.data.VyraRepository
+import com.example.vyra.data.db.AnalyticsCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 data class DashboardMetrics(
@@ -37,7 +39,40 @@ class DashboardViewModel(private val repository: VyraRepository) : ViewModel() {
     init {
         viewModelScope.launch {
             repository.seedInitialDataIfNeeded()
+            observeCachedMetrics()
             loadActivities()
+        }
+    }
+
+    private fun observeCachedMetrics() {
+        viewModelScope.launch {
+            repository.cachedAnalytics.collectLatest { cached ->
+                if (cached != null) {
+                    _metrics.value = DashboardMetrics(
+                        monthlyRevenue = cached.monthlyRevenue,
+                        revenueGrowthPercent = cached.revenueGrowthPercent,
+                        totalFans = cached.totalFans,
+                        vipFans = (cached.totalFans * 0.15).toInt(),
+                        engagementRate = 9.2,
+                        viralityScore = cached.viralityScore,
+                        activeVoiceSessions = 42
+                    )
+                }
+            }
+        }
+    }
+
+    fun updateMetricsLocally(newRevenue: Double, newFans: Int, newVirality: Int) {
+        viewModelScope.launch {
+            repository.saveAnalyticsCache(
+                AnalyticsCache(
+                    monthlyRevenue = newRevenue,
+                    totalFans = newFans,
+                    viralityScore = newVirality,
+                    revenueGrowthPercent = 32.1,
+                    activeSubscribers = (newFans * 0.3).toInt()
+                )
+            )
         }
     }
 

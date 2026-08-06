@@ -71,4 +71,16 @@ class ContentOptimizerViewModel(private val repository: VyraRepository) : ViewMo
             repository.addPost(newPost)
         }
     }
+
+    fun updateStatus(postId: Long, newStatus: String) {
+        viewModelScope.launch {
+            repository.updatePostStatus(postId, newStatus)
+        }
+    }
+
+    fun deletePost(postId: Long) {
+        viewModelScope.launch {
+            repository.deletePost(postId)
+        }
+    }
 }

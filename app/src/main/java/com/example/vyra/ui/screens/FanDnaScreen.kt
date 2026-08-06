@@ -20,16 +20,26 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +66,14 @@ fun FanDnaScreen(viewModel: FanDnaViewModel) {
     val filter by viewModel.selectedTierFilter.collectAsState()
     val query by viewModel.searchQuery.collectAsState()
 
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    var newName by remember { mutableStateOf("") }
+    var newUsername by remember { mutableStateOf("") }
+    var newTier by remember { mutableStateOf("VIP") }
+    var newPlatform by remember { mutableStateOf("X") }
+    var newSpend by remember { mutableStateOf("250") }
+
     val filteredFans = fans.filter { fan ->
         (filter == "All" || fan.tier == filter) &&
         (query.isBlank() || fan.name.contains(query, ignoreCase = true) || fan.username.contains(query, ignoreCase = true))
@@ -69,18 +87,37 @@ fun FanDnaScreen(viewModel: FanDnaViewModel) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            Text(
-                text = "FAN DNA ANALYTICS",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
-            )
-            Text(
-                text = "Behavioral profiling, engagement metrics & lifetime value",
-                color = TextSecondary,
-                fontSize = 12.sp
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "FAN DNA ANALYTICS",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                    Text(
+                        text = "Behavioral profiling, engagement metrics & lifetime value",
+                        color = TextSecondary,
+                        fontSize = 12.sp
+                    )
+                }
+
+                Button(
+                    onClick = { showAddDialog = true },
+                    modifier = Modifier.testTag("btn_add_fan"),
+                    colors = ButtonDefaults.buttonColors(containerColor = ElectricMagenta),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Add Fan", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            }
         }
 
         // Search Field
@@ -133,7 +170,9 @@ fun FanDnaScreen(viewModel: FanDnaViewModel) {
 
         items(filteredFans) { fan ->
             CyberpunkCard(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("fan_card_${fan.id}"),
                 borderColor = when (fan.tier) {
                     "VIP" -> ElectricMagenta
                     "Premium" -> NeonCyan
@@ -182,7 +221,31 @@ fun FanDnaScreen(viewModel: FanDnaViewModel) {
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
-                            TierBadge(tier = fan.tier)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                TierBadge(
+                                    tier = fan.tier,
+                                    onClick = {
+                                        val nextTier = when (fan.tier) {
+                                            "Standard" -> "Premium"
+                                            "Premium" -> "VIP"
+                                            else -> "Standard"
+                                        }
+                                        viewModel.updateTier(fan.id, nextTier)
+                                    }
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                IconButton(
+                                    onClick = { viewModel.deleteFan(fan.id) },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete Fan",
+                                        tint = TextMuted,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
                         }
 
                         Text(
@@ -214,10 +277,105 @@ fun FanDnaScreen(viewModel: FanDnaViewModel) {
             }
         }
     }
+
+    // Add Fan Dialog
+    if (showAddDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddDialog = false },
+            containerColor = CyberSurface,
+            title = {
+                Text("Register Fan DNA Profile", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text("Fan Name", color = TextMuted) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = NeonCyan,
+                            unfocusedBorderColor = CyberBorder
+                        ),
+                        modifier = Modifier.fillMaxWidth().testTag("input_fan_name")
+                    )
+
+                    OutlinedTextField(
+                        value = newUsername,
+                        onValueChange = { newUsername = it },
+                        label = { Text("Handle (@username)", color = TextMuted) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = NeonCyan,
+                            unfocusedBorderColor = CyberBorder
+                        ),
+                        modifier = Modifier.fillMaxWidth().testTag("input_fan_username")
+                    )
+
+                    OutlinedTextField(
+                        value = newSpend,
+                        onValueChange = { newSpend = it },
+                        label = { Text("Lifetime Spend ($)", color = TextMuted) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = NeonCyan,
+                            unfocusedBorderColor = CyberBorder
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf("VIP", "Premium", "Standard").forEach { t ->
+                            OutlinedButton(
+                                onClick = { newTier = t },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (newTier == t) ElectricMagenta.copy(alpha = 0.3f) else Color.Transparent
+                                )
+                            ) {
+                                Text(t, fontSize = 10.sp, color = if (newTier == t) ElectricMagenta else TextMuted)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.addNewFan(
+                            name = newName,
+                            username = newUsername,
+                            tier = newTier,
+                            platform = newPlatform,
+                            spend = newSpend.toDoubleOrNull() ?: 100.0
+                        )
+                        showAddDialog = false
+                        newName = ""
+                        newUsername = ""
+                    },
+                    modifier = Modifier.testTag("btn_save_fan"),
+                    colors = ButtonDefaults.buttonColors(containerColor = ElectricMagenta)
+                ) {
+                    Text("Save Profile", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showAddDialog = false }) {
+                    Text("Cancel", color = TextMuted)
+                }
+            }
+        )
+    }
 }
 
 @Composable
-private fun TierBadge(tier: String) {
+private fun TierBadge(tier: String, onClick: () -> Unit = {}) {
     val color = when (tier) {
         "VIP" -> ElectricMagenta
         "Premium" -> NeonCyan
@@ -228,6 +386,7 @@ private fun TierBadge(tier: String) {
             .clip(RoundedCornerShape(6.dp))
             .background(color.copy(alpha = 0.2f))
             .border(1.dp, color, RoundedCornerShape(6.dp))
+            .clickable { onClick() }
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

@@ -20,10 +20,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Publish
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -218,13 +222,16 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
 
         items(posts) { post ->
             CyberpunkCard(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("post_card_${post.id}"),
                 cornerRadius = 10.dp
             ) {
                 Column {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = post.title,
@@ -232,18 +239,55 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
                         )
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(ElectricMagenta.copy(alpha = 0.2f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = post.platform,
-                                color = ElectricMagenta,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(ElectricMagenta.copy(alpha = 0.2f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = post.platform,
+                                    color = ElectricMagenta,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(6.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(
+                                        if (post.status == "Published") NeonGreen.copy(alpha = 0.2f)
+                                        else QuantumViolet.copy(alpha = 0.2f)
+                                    )
+                                    .clickable {
+                                        val newStatus = if (post.status == "Published") "Draft" else "Published"
+                                        viewModel.updateStatus(post.id, newStatus)
+                                    }
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = post.status,
+                                    color = if (post.status == "Published") NeonGreen else QuantumViolet,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { viewModel.deletePost(post.id) },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete Post",
+                                    tint = TextMuted,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
 
@@ -253,7 +297,7 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
                         text = post.optimizedText,
                         color = TextSecondary,
                         fontSize = 12.sp,
-                        maxLines = 2
+                        maxLines = 3
                     )
                 }
             }

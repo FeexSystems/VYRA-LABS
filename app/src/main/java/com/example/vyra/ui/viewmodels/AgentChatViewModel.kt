@@ -3,13 +3,17 @@ package com.example.vyra.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vyra.data.VyraRepository
+import com.example.vyra.data.db.AgentPersonality
 import com.example.vyra.data.db.ChatMessage
+import com.example.vyra.data.db.VoiceInteraction
 import com.example.vyra.data.models.AiAgent
 import com.example.vyra.data.models.AiAgents
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AgentChatViewModel(private val repository: VyraRepository) : ViewModel() {
@@ -25,6 +29,13 @@ class AgentChatViewModel(private val repository: VyraRepository) : ViewModel() {
 
     private val _isGenerating = MutableStateFlow(false)
     val isGenerating: StateFlow<Boolean> = _isGenerating.asStateFlow()
+
+    // Room Database Cached Voice History & Agent Personalities
+    val voiceInteractions: StateFlow<List<VoiceInteraction>> = repository.allVoiceInteractions
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val agentPersonalities: StateFlow<List<AgentPersonality>> = repository.agentPersonalities
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         observeMessagesForAgent(AiAgents.Bushfeexer.id)
@@ -61,7 +72,57 @@ class AgentChatViewModel(private val repository: VyraRepository) : ViewModel() {
                 userPrompt = userText,
                 agentResponse = response
             )
+
+            // Save Voice Interaction to Room DB if voice mode is active or for voice agent
+            if (_isVoiceActive.value || currentAgent.id == "voice_agent") {
+                val voiceLog = VoiceInteraction(
+                    agentId = currentAgent.id,
+                    agentName = currentAgent.name,
+                    transcript = userText,
+                    agentResponse = response,
+                    durationSeconds = (10..25).random(),
+                    sentimentScore = 0.96f
+                )
+                repository.saveVoiceInteraction(voiceLog)
+            }
+
             _isGenerating.value = false
+        }
+    }
+
+    fun clearVoiceHistory() {
+        viewModelScope.launch {
+            repository.clearVoiceInteractions()
+        }
+    }
+
+    fun deleteVoiceInteraction(id: Long) {
+        viewModelScope.launch {
+            repository.deleteVoiceInteraction(id)
+        }
+    }
+
+    fun saveAgentPersonalitySettings(
+        agentId: String,
+        name: String,
+        systemPrompt: String,
+        voiceId: String,
+        voiceName: String,
+        speed: Float,
+        pitch: Float
+    ) {
+        viewModelScope.launch {
+            repository.saveAgentPersonality(
+                AgentPersonality(
+                    agentId = agentId,
+                    name = name,
+                    systemPrompt = systemPrompt,
+                    voiceId = voiceId,
+                    voiceName = voiceName,
+                    speed = speed,
+                    pitch = pitch
+                )
+            )
         }
     }
 
@@ -84,7 +145,7 @@ class AgentChatViewModel(private val repository: VyraRepository) : ViewModel() {
             }
             "voice_agent" -> {
                 "🎙️ [ELEVENLABS VOICE AI]\nSynthesizing voice audio stream for prompt: \"$input\"\n\n" +
-                "🔊 Audio Waveform Rendered. Pitch: Cyber Accent 2.0. Voice synthesis complete! Listening in real-time."
+                "🔊 Audio Waveform Rendered. Pitch: Cyber Accent 2.0. Voice synthesis complete! Streaming in real-time."
             }
             else -> "Agent response generated for: $input"
         }

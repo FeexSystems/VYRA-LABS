@@ -50,6 +50,8 @@ fun CyberpunkBottomNav(
     currentRoute: String,
     onNavigate: (String) -> Unit
 ) {
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
     val items = listOf(
         NavItem.Dashboard,
         NavItem.Agents,
@@ -76,7 +78,10 @@ fun CyberpunkBottomNav(
             val isSelected = currentRoute == item.route
             NavigationBarItem(
                 selected = isSelected,
-                onClick = { onNavigate(item.route) },
+                onClick = {
+                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                    onNavigate(item.route)
+                },
                 modifier = Modifier.testTag("nav_${item.route}"),
                 icon = {
                     Icon(

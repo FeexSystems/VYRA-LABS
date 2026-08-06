@@ -23,6 +23,7 @@ import com.example.vyra.ui.viewmodels.ContentOptimizerViewModel
 import com.example.vyra.ui.viewmodels.DashboardViewModel
 import com.example.vyra.ui.viewmodels.FanDnaViewModel
 import com.example.vyra.ui.viewmodels.MonetizationViewModel
+import com.example.vyra.ui.viewmodels.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +38,7 @@ class MainActivity : ComponentActivity() {
         val fanDnaViewModel = FanDnaViewModel(repository)
         val optimizerViewModel = ContentOptimizerViewModel(repository)
         val monetizationViewModel = MonetizationViewModel()
+        val settingsViewModel = SettingsViewModel(repository)
 
         setContent {
             VYRATheme {
@@ -48,7 +50,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    topBar = {
+ topBar = {
                         CyberpunkHeader(
                             isVoiceActive = isVoiceActive,
                             onVoiceToggle = { agentChatViewModel.toggleVoiceMode() }
@@ -76,7 +78,8 @@ class MainActivity : ComponentActivity() {
                         agentChatViewModel = agentChatViewModel,
                         fanDnaViewModel = fanDnaViewModel,
                         optimizerViewModel = optimizerViewModel,
-                        monetizationViewModel = monetizationViewModel
+                        monetizationViewModel = monetizationViewModel,
+                        settingsViewModel = settingsViewModel
                     )
                 }
             }

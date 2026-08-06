@@ -17,6 +17,7 @@ import com.example.vyra.ui.viewmodels.ContentOptimizerViewModel
 import com.example.vyra.ui.viewmodels.DashboardViewModel
 import com.example.vyra.ui.viewmodels.FanDnaViewModel
 import com.example.vyra.ui.viewmodels.MonetizationViewModel
+import com.example.vyra.ui.viewmodels.SettingsViewModel
 
 @Composable
 fun VyraNavGraph(
@@ -26,7 +27,8 @@ fun VyraNavGraph(
     agentChatViewModel: AgentChatViewModel,
     fanDnaViewModel: FanDnaViewModel,
     optimizerViewModel: ContentOptimizerViewModel,
-    monetizationViewModel: MonetizationViewModel
+    monetizationViewModel: MonetizationViewModel,
+    settingsViewModel: SettingsViewModel
 ) {
     NavHost(
         navController = navController,
@@ -38,7 +40,8 @@ fun VyraNavGraph(
                 viewModel = dashboardViewModel,
                 onNavigateToAgents = { navController.navigate(NavItem.Agents.route) },
                 onNavigateToOptimizer = { navController.navigate(NavItem.Optimizer.route) },
-                onNavigateToMonetization = { navController.navigate(NavItem.Monetization.route) }
+                onNavigateToMonetization = { navController.navigate(NavItem.Monetization.route) },
+                onNavigateToSettings = { navController.navigate(NavItem.Settings.route) }
             )
         }
 
@@ -59,7 +62,7 @@ fun VyraNavGraph(
         }
 
         composable(NavItem.Settings.route) {
-            SettingsScreen()
+            SettingsScreen(viewModel = settingsViewModel)
         }
     }
 }
