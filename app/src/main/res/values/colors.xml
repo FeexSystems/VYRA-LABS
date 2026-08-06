@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cyber_bg">#0A0A12</color>
+    <color name="cyber_surface">#12121E</color>
+    <color name="cyber_surface_variant">#1A1A2E</color>
+    <color name="neon_cyan">#00F5FF</color>
+    <color name="electric_magenta">#FF007A</color>
+    <color name="quantum_violet">#8B00FF</color>
+    <color name="neon_green">#00FF87</color>
+</resources>

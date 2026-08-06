@@ -1,0 +1,78 @@
+{
+  "mcpServers": {
+    "web-search": {
+      "command": "uvx",
+      "args": ["mcp-server-web-search@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["search_web"]
+    },
+    "fetch": {
+      "command": "uvx", 
+      "args": ["mcp-server-fetch@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["fetch"]
+    },
+    "sqlite": {
+      "command": "uvx",
+      "args": ["mcp-server-sqlite@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["read-query", "write-query", "create-table", "list-tables", "describe-table"]
+    },
+    "puppeteer": {
+      "command": "uvx",
+      "args": ["mcp-server-puppeteer@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["puppeteer_screenshot", "puppeteer_click", "puppeteer_type", "puppeteer_navigate"]
+    },
+    "brave-search": {
+      "command": "uvx",
+      "args": ["mcp-server-brave-search@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "BRAVE_API_KEY": ""
+      },
+      "disabled": true,
+      "autoApprove": ["brave_web_search"]
+    },
+    "github": {
+      "command": "uvx",
+      "args": ["mcp-server-github@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
+      },
+      "disabled": true,
+      "autoApprove": ["create_or_update_file", "get_file_contents", "create_repository", "fork_repository"]
+    },
+    "postgres": {
+      "command": "uvx",
+      "args": ["mcp-server-postgres@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["read-query", "write-query", "create-table", "list-tables", "describe-table"]
+    },
+    "memory": {
+      "command": "uvx",
+      "args": ["mcp-server-memory@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["create_memory", "read_memory", "update_memory", "delete_memory", "search_memory"]
+    }
+  }
+}

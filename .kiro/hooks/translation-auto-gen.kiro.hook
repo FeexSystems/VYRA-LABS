@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "name": "Auto Translation Generator",
+  "description": "Monitors changes to localization files and automatically generates translations for all configured target languages when new or modified text content is detected",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.json",
+      "**/*.yaml",
+      "**/*.yml",
+      "**/locales/**/*",
+      "**/i18n/**/*",
+      "**/translations/**/*",
+      "**/lang/**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A localization file has been modified. Please analyze the changes to identify new or modified text content that needs translation. For any new or changed text entries:\n\n1. Identify the source language and extract the new/modified text\n2. Determine the target languages that need translations based on existing locale files\n3. Generate accurate translations that:\n   - Maintain proper context and meaning\n   - Follow locale-specific conventions (date formats, currency, etc.)\n   - Preserve any interpolation variables or formatting codes\n   - Consider cultural nuances and appropriate tone\n4. Output the translations in the same file format and structure\n5. Ensure consistency with existing translation patterns in the codebase\n\nFocus on maintaining translation quality while preserving technical formatting and variable placeholders."
+  }
+}

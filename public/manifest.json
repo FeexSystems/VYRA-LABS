@@ -1,0 +1,70 @@
+{
+  "name": "VYRA - AI-Powered Creator Platform",
+  "short_name": "VYRA",
+  "description": "AI-powered creator platform with chat-first interface for seamless creator-fan interactions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#FFD700",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["social", "entertainment", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-16x16.svg",
+      "sizes": "16x16",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/vyra-logo.svg",
+      "sizes": "200x80",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/vyra-logo.svg",
+      "sizes": "200x80",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "VYRA Chat Interface"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Creator Dashboard",
+      "short_name": "Dashboard",
+      "description": "Access your creator analytics and tools",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "short_name": "Chat",
+      "description": "Start chatting with your fans",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}

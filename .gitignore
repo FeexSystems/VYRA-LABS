@@ -1,0 +1,132 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+out/
+.next/
+.nuxt/
+.output/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+.nyc_output/
+
+# Environment files (security)
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.test
+*.env
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+data/
+database/*.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+.cache/
+.parcel-cache/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+.emacs.d/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test artifacts
+test-results/
+test-uploads/
+uploads/test/
+*.test.db
+coverage/
+
+# Debug files
+debug/
+*.debug
+.debug/
+
+# Documentation artifacts (prevent clutter)
+*-summary.md
+*-status.md
+*-report-*.md
+temp-*.md
+draft-*.md
+old-*.md
+backup-*.md
+
+# Build and deployment artifacts
+.vercel/
+.netlify/
+.firebase/
+.serverless/
+
+# Local configuration
+.config/
+config/local.*
+local.config.*
+
+# Backup files
+*.bak
+*.backup
+*~
+*.orig
+
+# Package manager files
+package-lock.json.bak
+yarn.lock.bak
+pnpm-lock.yaml.bak
+
+# Runtime files
+*.local

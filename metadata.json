@@ -1,0 +1,8 @@
+{
+  "name": "VYRA AI",
+  "description": "AI-powered creator platform with integrated voice agents, Fan DNA analytics, and content optimization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

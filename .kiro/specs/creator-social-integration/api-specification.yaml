@@ -1,0 +1,825 @@
+openapi: 3.0.3
+info:
+  title: VYRA Creator Social Integration API
+  description: API for managing creator social links, platform connections, and public profiles
+  version: 1.0.0
+  contact:
+    name: VYRA Development Team
+    email: dev@vyra.com
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://api.vyra.com
+    description: Production server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - error
+        - timestamp
+
+    SocialLink:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the social link
+        user_id:
+          type: string
+          description: ID of the creator who owns this link
+        platform_type:
+          type: string
+          enum: [twitter, instagram, tiktok, youtube, twitch, onlyfans, fansly, custom]
+          description: Type of platform
+        platform_name:
+          type: string
+          description: Display name for the platform
+        url:
+          type: string
+          format: uri
+          description: The social media or platform URL
+        display_order:
+          type: integer
+          description: Order in which to display the link
+        is_active:
+          type: boolean
+          description: Whether the link is currently active
+        click_count:
+          type: integer
+          description: Number of times this link has been clicked
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - user_id
+        - platform_type
+        - platform_name
+        - url
+        - display_order
+        - is_active
+        - click_count
+
+    CreateSocialLinkRequest:
+      type: object
+      properties:
+        platform_type:
+          type: string
+          enum: [twitter, instagram, tiktok, youtube, twitch, onlyfans, fansly, custom]
+        platform_name:
+          type: string
+          maxLength: 100
+        url:
+          type: string
+          format: uri
+        display_order:
+          type: integer
+          minimum: 0
+      required:
+        - platform_type
+        - platform_name
+        - url
+
+    UpdateSocialLinkRequest:
+      type: object
+      properties:
+        platform_name:
+          type: string
+          maxLength: 100
+        url:
+          type: string
+          format: uri
+        display_order:
+          type: integer
+          minimum: 0
+        is_active:
+          type: boolean
+
+    PlatformConnection:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        platform_type:
+          type: string
+          enum: [onlyfans, fansly, manyvids, chaturbate, cam4, stripchat]
+        platform_username:
+          type: string
+        connection_method:
+          type: string
+          enum: [oauth, manual]
+        verification_status:
+          type: string
+          enum: [pending, verified, failed]
+        is_public:
+          type: boolean
+          description: Whether to show this connection on public profile
+        last_sync_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - user_id
+        - platform_type
+        - platform_username
+        - connection_method
+        - verification_status
+        - is_public
+
+    ConnectPlatformRequest:
+      type: object
+      properties:
+        platform_type:
+          type: string
+          enum: [onlyfans, fansly, manyvids, chaturbate, cam4, stripchat]
+        platform_username:
+          type: string
+          maxLength: 100
+        connection_method:
+          type: string
+          enum: [oauth, manual]
+      required:
+        - platform_type
+        - platform_username
+        - connection_method
+
+    ProfileCustomization:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        theme:
+          type: string
+          enum: [cyberpunk, minimal, colorful]
+        bio:
+          type: string
+          maxLength: 500
+        profile_image_url:
+          type: string
+          format: uri
+        background_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        accent_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        custom_css:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - user_id
+        - theme
+
+    UpdateProfileCustomizationRequest:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [cyberpunk, minimal, colorful]
+        bio:
+          type: string
+          maxLength: 500
+        profile_image_url:
+          type: string
+          format: uri
+        background_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        accent_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        custom_css:
+          type: string
+
+    PublicProfile:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            username:
+              type: string
+            role:
+              type: string
+            tier:
+              type: string
+            avatar_url:
+              type: string
+            is_verified:
+              type: boolean
+        customization:
+          $ref: '#/components/schemas/ProfileCustomization'
+        social_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialLink'
+        platform_connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformConnection'
+        stats:
+          type: object
+          properties:
+            total_links:
+              type: integer
+            total_clicks:
+              type: integer
+            page_views:
+              type: integer
+
+    AnalyticsData:
+      type: object
+      properties:
+        total_page_views:
+          type: integer
+        unique_visitors:
+          type: integer
+        total_clicks:
+          type: integer
+        link_performance:
+          type: array
+          items:
+            type: object
+            properties:
+              link_id:
+                type: string
+              platform_name:
+                type: string
+              clicks:
+                type: integer
+              ctr:
+                type: number
+                format: float
+        time_series:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              page_views:
+                type: integer
+              clicks:
+                type: integer
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Social Links Management
+  /social-links:
+    get:
+      summary: Get user's social links
+      tags: [Social Links]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: include_inactive
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include inactive links in response
+      responses:
+        '200':
+          description: List of social links
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SocialLink'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new social link
+      tags: [Social Links]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSocialLinkRequest'
+      responses:
+        '201':
+          description: Social link created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLink'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /social-links/{linkId}:
+    put:
+      summary: Update a social link
+      tags: [Social Links]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSocialLinkRequest'
+      responses:
+        '200':
+          description: Social link updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLink'
+        '404':
+          description: Social link not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a social link
+      tags: [Social Links]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Social link deleted successfully
+        '404':
+          description: Social link not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /social-links/reorder:
+    post:
+      summary: Reorder social links
+      tags: [Social Links]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                link_ids:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - link_ids
+      responses:
+        '200':
+          description: Links reordered successfully
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /social-links/{linkId}/click:
+    post:
+      summary: Track a click on a social link
+      tags: [Social Links]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                referrer:
+                  type: string
+                user_agent:
+                  type: string
+      responses:
+        '200':
+          description: Click tracked successfully
+        '404':
+          description: Social link not found
+
+  # Platform Connections
+  /platform-connections:
+    get:
+      summary: Get user's platform connections
+      tags: [Platform Connections]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of platform connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlatformConnection'
+
+    post:
+      summary: Connect to a creator platform
+      tags: [Platform Connections]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectPlatformRequest'
+      responses:
+        '201':
+          description: Platform connection initiated
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PlatformConnection'
+                  - type: object
+                    properties:
+                      oauth_url:
+                        type: string
+                        format: uri
+                        description: OAuth authorization URL for redirect
+                      state:
+                        type: string
+                        description: OAuth state parameter
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /platform-connections/{connectionId}:
+    delete:
+      summary: Disconnect from a platform
+      tags: [Platform Connections]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: connectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Platform disconnected successfully
+        '404':
+          description: Platform connection not found
+
+    patch:
+      summary: Update platform connection settings
+      tags: [Platform Connections]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: connectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_public:
+                  type: boolean
+      responses:
+        '200':
+          description: Platform connection updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformConnection'
+
+  /platform-connections/oauth/callback:
+    get:
+      summary: Handle OAuth callback
+      tags: [Platform Connections]
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to success/error page
+        '400':
+          description: Invalid OAuth callback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Profile Management
+  /profile/customization:
+    get:
+      summary: Get profile customization settings
+      tags: [Profile]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile customization settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileCustomization'
+
+    put:
+      summary: Update profile customization
+      tags: [Profile]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileCustomizationRequest'
+      responses:
+        '200':
+          description: Profile customization updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileCustomization'
+
+  /profile/url:
+    get:
+      summary: Get user's public profile URL
+      tags: [Profile]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Public profile URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_url:
+                    type: string
+                    format: uri
+                    example: "https://vyra.com/creator/username"
+
+  # Public Profile (No Authentication Required)
+  /public/profile/{username}:
+    get:
+      summary: Get public profile by username
+      tags: [Public Profile]
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Public profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicProfile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /public/profile/{username}/view:
+    post:
+      summary: Track a page view for public profile
+      tags: [Public Profile]
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                referrer:
+                  type: string
+                user_agent:
+                  type: string
+      responses:
+        '200':
+          description: Page view tracked successfully
+
+  # Analytics
+  /analytics:
+    get:
+      summary: Get analytics data for user
+      tags: [Analytics]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: week
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsData'
+
+  /analytics/links:
+    get:
+      summary: Get link performance analytics
+      tags: [Analytics]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Link performance data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    link_id:
+                      type: string
+                    platform_name:
+                      type: string
+                    clicks:
+                      type: integer
+                    ctr:
+                      type: number
+                      format: float
+                    url:
+                      type: string
+
+  # Utility Endpoints
+  /platforms:
+    get:
+      summary: Get list of supported platforms
+      tags: [Utility]
+      responses:
+        '200':
+          description: List of supported platforms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    name:
+                      type: string
+                    oauth_enabled:
+                      type: boolean
+                    icon_url:
+                      type: string
+                    color:
+                      type: string
+
+  /validate-url:
+    post:
+      summary: Validate a URL
+      tags: [Utility]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+              required:
+                - url
+      responses:
+        '200':
+          description: URL validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  platform_detected:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string

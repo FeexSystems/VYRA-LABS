@@ -1,0 +1,19 @@
+{
+  "name": "Test Runner",
+  "description": "Automatically run tests when TypeScript files are saved",
+  "trigger": {
+    "type": "file_save",
+    "pattern": "**/*.{ts,tsx}",
+    "exclude": ["node_modules/**", "dist/**", "build/**"]
+  },
+  "actions": [
+    {
+      "type": "shell_command",
+      "command": "npm test",
+      "workingDirectory": ".",
+      "showOutput": true
+    }
+  ],
+  "enabled": true,
+  "debounceMs": 1000
+}

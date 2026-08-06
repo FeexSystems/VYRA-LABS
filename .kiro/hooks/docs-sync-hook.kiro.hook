@@ -1,0 +1,30 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Monitors TypeScript source files, configuration files, and other relevant project files for changes and automatically updates documentation in README.md or docs folder to keep it synchronized with code changes",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "package.json",
+      "tsconfig.json",
+      "vite.config.ts",
+      "vite.config.server.ts",
+      "tailwind.config.ts",
+      "components.json",
+      "netlify.toml",
+      ".env",
+      "shared/**/*",
+      "client/**/*",
+      "server/**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Source files have been modified in this TypeScript project. Please review the changes and update the documentation accordingly. Check if the README.md needs updates for new features, API changes, configuration changes, or architectural modifications. If there is a /docs folder, also update relevant documentation files there. Focus on keeping the documentation accurate and helpful for developers working with this VYRA platform codebase."
+  }
+}

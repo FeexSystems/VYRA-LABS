@@ -1,0 +1,35 @@
+# Ignore pnpm files to use npm in Vercel
+pnpm-lock.yaml
+.pnpm-store/
+
+# Ignore development files
+.env.local
+.env.development
+*.log
+.DS_Store
+
+# Ignore built output (will be regenerated)
+dist/
+
+# Ignore server files for static build
+server/
+tests/
+
+# Ignore test files
+*.test.ts
+*.test.tsx
+coverage/
+
+# Ignore documentation
+docs/
+*.md
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore git files
+.git/
+.gitignore
