@@ -1099,7 +1099,7 @@ fun ProfileScreen(
 // --- SUB-COMPONENTS ---
 
 @Composable
-private fun ProfileStatItem(
+fun ProfileStatItem(
     label: String,
     value: String,
     color: Color

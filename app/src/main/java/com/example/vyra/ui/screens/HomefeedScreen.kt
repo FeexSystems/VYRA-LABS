@@ -1,6 +1,9 @@
 package com.example.vyra.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,9 +18,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,13 +31,14 @@ import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -52,12 +58,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -157,7 +165,7 @@ fun HomefeedScreen(
                 }
             }
 
-            // Feed Posts List
+            // Masonry Staggered Grid Feed
             if (filteredPosts.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -172,16 +180,19 @@ fun HomefeedScreen(
                     )
                 }
             } else {
-                LazyColumn(
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(2),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalItemSpacing = 10.dp
                 ) {
                     items(filteredPosts, key = { it.id }) { post ->
-                        PostCardItem(
+                        PostMasonryCardItem(
                             post = post,
                             onToggleCast = { viewModel.toggleCast(post.id) },
+                            onToggleSighted = { viewModel.toggleSighted(post.id) },
                             onRevyralize = { viewModel.revyralize(post.id) }
                         )
                     }
@@ -202,26 +213,45 @@ fun HomefeedScreen(
 }
 
 @Composable
-fun PostCardItem(
+fun PostMasonryCardItem(
     post: ContentPost,
     onToggleCast: () -> Unit,
+    onToggleSighted: () -> Unit,
     onRevyralize: () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
+    // Bouncy scale animations for Casted (like) and Sighted (view) interactions
+    val castScale by animateFloatAsState(
+        targetValue = if (post.isCasted) 1.25f else 1.0f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "castScale"
+    )
+
+    val sightedScale by animateFloatAsState(
+        targetValue = if (post.isSighted) 1.2f else 1.0f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "sightedScale"
+    )
+
     CyberpunkCard(
         modifier = Modifier.fillMaxWidth(),
-        borderColor = if (post.isCasted) ElectricMagenta else CyberBorder
+        borderColor = if (post.isCasted) ElectricMagenta else if (post.isSighted) NeonCyan else CyberBorder
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Author Header
+            // Author Avatar & Role Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(28.dp)
                             .clip(CircleShape)
                             .background(
                                 if (post.authorRole == UserRole.CREATOR) ElectricMagenta.copy(alpha = 0.3f)
@@ -238,48 +268,48 @@ fun PostCardItem(
                             text = post.authorName.take(1).uppercase(),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            fontSize = 12.sp
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
 
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = post.authorName,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(
-                                        if (post.authorRole == UserRole.CREATOR) ElectricMagenta.copy(alpha = 0.2f)
-                                        else NeonGreen.copy(alpha = 0.2f)
-                                    )
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = if (post.authorRole == UserRole.CREATOR) "CREATOR" else "FAN",
-                                    color = if (post.authorRole == UserRole.CREATOR) ElectricMagenta else NeonGreen,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
-                            }
-                        }
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "${post.authorHandle} • ${post.timestamp}",
+                            text = post.authorName,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = post.timestamp,
                             color = TextMuted,
-                            fontSize = 11.sp
+                            fontSize = 10.sp
                         )
                     }
                 }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            if (post.authorRole == UserRole.CREATOR) ElectricMagenta.copy(alpha = 0.2f)
+                            else NeonGreen.copy(alpha = 0.2f)
+                        )
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (post.authorRole == UserRole.CREATOR) "CREATOR" else "FAN",
+                        color = if (post.authorRole == UserRole.CREATOR) ElectricMagenta else NeonGreen,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Post Title & Content
             if (post.title.isNotBlank()) {
@@ -287,28 +317,43 @@ fun PostCardItem(
                     text = post.title,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
+                    fontSize = 13.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            Text(
-                text = post.content,
-                color = TextSecondary,
-                fontSize = 13.sp,
-                lineHeight = 18.sp
-            )
+            if (post.content.isNotBlank()) {
+                Text(
+                    text = post.content,
+                    color = TextSecondary,
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
-            // Media Display
+            // Custom Media Rendering (Image, Video, Audio)
             if (post.mediaUrl.isNotBlank()) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+                val mediaHeight = remember(post.id) {
+                    // Staggered height variation
+                    when (post.mediaType.lowercase()) {
+                        "video" -> 160.dp
+                        "audio", "music" -> 110.dp
+                        else -> if (post.id.hashCode() % 2 == 0) 180.dp else 140.dp
+                    }
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .height(mediaHeight)
+                        .clip(RoundedCornerShape(8.dp))
                         .background(CyberBg)
-                        .border(1.dp, CyberBorder, RoundedCornerShape(12.dp))
+                        .border(1.dp, CyberBorder, RoundedCornerShape(8.dp))
                 ) {
                     AsyncImage(
                         model = post.mediaUrl,
@@ -316,6 +361,7 @@ fun PostCardItem(
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
+
                     if (post.mediaType.equals("audio", ignoreCase = true) || post.mediaType.equals("music", ignoreCase = true)) {
                         Box(
                             modifier = Modifier
@@ -325,7 +371,7 @@ fun PostCardItem(
                                         listOf(Color.Transparent, CyberBg.copy(alpha = 0.85f))
                                     )
                                 )
-                                .padding(12.dp),
+                                .padding(8.dp),
                             contentAlignment = Alignment.BottomStart
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -333,14 +379,14 @@ fun PostCardItem(
                                     imageVector = Icons.Default.MusicNote,
                                     contentDescription = "Audio Track",
                                     tint = NeonCyan,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "PLAY AUDIO TRACK",
+                                    text = "AUDIO TRACK",
                                     color = NeonCyan,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 12.sp
+                                    fontSize = 10.sp
                                 )
                             }
                         }
@@ -348,61 +394,86 @@ fun PostCardItem(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.3f)),
+                                .background(Color.Black.copy(alpha = 0.35f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Videocam,
-                                contentDescription = "Video",
-                                tint = ElectricMagenta,
-                                modifier = Modifier.size(44.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(ElectricMagenta.copy(alpha = 0.85f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = "Play Video",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            // Tags
-            if (post.tags.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    post.tags.take(3).forEach { tag ->
-                        Text(
-                            text = "#$tag",
-                            color = NeonCyan,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Interactive Actions Bar (Cast / Likes, Revyralize / Repost, Comments, Share)
+            // Interactive Action Mechanics (Casted, Sighted, Revyral, Share)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Cast (Like) Button
+                // Casted (Like) Button with Bouncy Heart Scale
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clickable { onToggleCast() }
-                        .padding(vertical = 4.dp, horizontal = 6.dp)
+                        .clickable {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onToggleCast()
+                        }
+                        .padding(vertical = 2.dp, horizontal = 2.dp)
                 ) {
                     Icon(
                         imageVector = if (post.isCasted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Cast",
                         tint = if (post.isCasted) ElectricMagenta else TextMuted,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier
+                            .size(16.dp)
+                            .scale(castScale)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = "${post.castCount} Casts",
+                        text = "${post.castCount}",
                         color = if (post.isCasted) ElectricMagenta else TextSecondary,
-                        fontSize = 12.sp,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Sighted (View) Button with Bouncy Eye Animation
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clickable {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                            onToggleSighted()
+                        }
+                        .padding(vertical = 2.dp, horizontal = 2.dp)
+                ) {
+                    Icon(
+                        imageVector = if (post.isSighted) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = "Sighted",
+                        tint = if (post.isSighted) NeonCyan else TextMuted,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .scale(sightedScale)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = "${post.sightedCount}",
+                        color = if (post.isSighted) NeonCyan else TextSecondary,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -412,49 +483,20 @@ fun PostCardItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clickable { onRevyralize() }
-                        .padding(vertical = 4.dp, horizontal = 6.dp)
+                        .padding(vertical = 2.dp, horizontal = 2.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Repeat,
                         contentDescription = "Revyralize",
                         tint = NeonGreen,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
                     Text(
-                        text = "${post.revyralCount} Revyrals",
+                        text = "${post.revyralCount}",
                         color = NeonGreen,
-                        fontSize = 12.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
-                    )
-                }
-
-                // Comment Button
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 6.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ChatBubbleOutline,
-                        contentDescription = "Comments",
-                        tint = TextMuted,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "${post.commentCount}",
-                        color = TextSecondary,
-                        fontSize = 12.sp
-                    )
-                }
-
-                // Share Button
-                IconButton(onClick = {}, modifier = Modifier.size(28.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Share",
-                        tint = TextMuted,
-                        modifier = Modifier.size(16.dp)
                     )
                 }
             }

@@ -40,6 +40,10 @@ class HomeFeedViewModel(private val repository: VyraRepository) : ViewModel() {
         repository.toggleCastPost(postId)
     }
 
+    fun toggleSighted(postId: String) {
+        repository.toggleSightedPost(postId)
+    }
+
     fun revyralize(postId: String) {
         repository.incrementRevyralPost(postId)
     }
