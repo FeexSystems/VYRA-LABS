@@ -7,17 +7,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.vyra.ui.components.NavItem
 import com.example.vyra.ui.screens.AgentsScreen
+import com.example.vyra.ui.screens.ChatScreen
 import com.example.vyra.ui.screens.DashboardScreen
 import com.example.vyra.ui.screens.FanDnaScreen
+import com.example.vyra.ui.screens.HomefeedScreen
 import com.example.vyra.ui.screens.MonetizationScreen
 import com.example.vyra.ui.screens.OptimizerScreen
 import com.example.vyra.ui.screens.ProfileScreen
 import com.example.vyra.ui.screens.SettingsScreen
 import com.example.vyra.ui.screens.UserProfileScreen
+import com.example.vyra.ui.screens.VyraShowScreen
 import com.example.vyra.ui.viewmodels.AgentChatViewModel
+import com.example.vyra.ui.viewmodels.ChatViewModel
 import com.example.vyra.ui.viewmodels.ContentOptimizerViewModel
 import com.example.vyra.ui.viewmodels.DashboardViewModel
 import com.example.vyra.ui.viewmodels.FanDnaViewModel
+import com.example.vyra.ui.viewmodels.HomeFeedViewModel
 import com.example.vyra.ui.viewmodels.MonetizationViewModel
 import com.example.vyra.ui.viewmodels.ProfileViewModel
 import com.example.vyra.ui.viewmodels.SettingsViewModel
@@ -32,7 +37,9 @@ fun VyraNavGraph(
     fanDnaViewModel: FanDnaViewModel,
     optimizerViewModel: ContentOptimizerViewModel,
     monetizationViewModel: MonetizationViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    homeFeedViewModel: HomeFeedViewModel,
+    chatViewModel: ChatViewModel
 ) {
     NavHost(
         navController = navController,
@@ -49,8 +56,28 @@ fun VyraNavGraph(
             )
         }
 
+        composable(NavItem.Homefeed.route) {
+            HomefeedScreen(
+                viewModel = homeFeedViewModel,
+                monetizationViewModel = monetizationViewModel
+            )
+        }
+
+        composable(NavItem.VyraShow.route) {
+            VyraShowScreen(viewModel = homeFeedViewModel)
+        }
+
+        composable(NavItem.Chat.route) {
+            ChatScreen(viewModel = chatViewModel)
+        }
+
         composable(NavItem.Profile.route) {
-            UserProfileScreen(viewModel = profileViewModel)
+            UserProfileScreen(
+                viewModel = profileViewModel,
+                settingsViewModel = settingsViewModel,
+                monetizationViewModel = monetizationViewModel,
+                homeFeedViewModel = homeFeedViewModel
+            )
         }
 
         composable(NavItem.Agents.route) {
@@ -58,7 +85,10 @@ fun VyraNavGraph(
         }
 
         composable(NavItem.FanDna.route) {
-            FanDnaScreen(viewModel = fanDnaViewModel)
+            FanDnaScreen(
+                viewModel = fanDnaViewModel,
+                optimizerViewModel = optimizerViewModel
+            )
         }
 
         composable(NavItem.Optimizer.route) {

@@ -48,12 +48,11 @@ import com.example.vyra.data.models.AiAgents
 import com.example.vyra.theme.CyberBg
 import com.example.vyra.theme.CyberBorder
 import com.example.vyra.theme.CyberSurface
-import com.example.vyra.theme.ElectricMagenta
 import com.example.vyra.theme.NeonCyan
-import com.example.vyra.theme.NeonGreen
 import com.example.vyra.theme.QuantumViolet
 import com.example.vyra.theme.TextMuted
 import com.example.vyra.theme.TextSecondary
+import com.example.vyra.theme.parseHexColor
 import com.example.vyra.ui.components.VoiceInteractionHistoryComponent
 import com.example.vyra.ui.components.VoiceOrb
 import com.example.vyra.ui.viewmodels.AgentChatViewModel
@@ -83,14 +82,16 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
         ) {
             items(AiAgents.list) { agent ->
                 val isSelected = selectedAgent.id == agent.id
+                val agentColor = com.example.vyra.theme.parseHexColor(agent.primaryColor)
+
                 Box(
                     modifier = Modifier
                         .testTag("agent_chip_${agent.id}")
                         .clip(RoundedCornerShape(12.dp))
-                        .background(if (isSelected) agent.primaryColor.copy(alpha = 0.25f) else CyberSurface)
+                        .background(if (isSelected) agentColor.copy(alpha = 0.25f) else CyberSurface)
                         .border(
                             1.dp,
-                            if (isSelected) agent.primaryColor else CyberBorder,
+                            if (isSelected) agentColor else CyberBorder,
                             RoundedCornerShape(12.dp)
                         )
                         .clickable {
@@ -104,12 +105,12 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(agent.primaryColor)
+                                .background(agentColor)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = agent.name,
-                            color = if (isSelected) agent.primaryColor else Color.White,
+                            color = if (isSelected) agentColor else Color.White,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             fontSize = 12.sp
                         )
@@ -118,13 +119,15 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
             }
         }
 
+        val selectedAgentColor = com.example.vyra.theme.parseHexColor(selectedAgent.primaryColor)
+
         // Selected Agent Details Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(CyberSurface)
-                .border(1.dp, selectedAgent.primaryColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                .border(1.dp, selectedAgentColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                 .padding(12.dp)
         ) {
             Row(
@@ -139,14 +142,14 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                     Icon(
                         imageVector = Icons.Default.Psychology,
                         contentDescription = null,
-                        tint = selectedAgent.primaryColor,
+                        tint = selectedAgentColor,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
                             text = selectedAgent.title,
-                            color = selectedAgent.primaryColor,
+                            color = selectedAgentColor,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
                         )
@@ -158,7 +161,6 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                     }
                 }
 
-                // Voice History Toggle Button
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -192,8 +194,7 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ElevenLabs Voice Orb (if Voice Agent or Voice Mode enabled)
-        if (selectedAgent.id == "voice_agent" || isVoiceActive) {
+        if (selectedAgent.id == "holokai" || isVoiceActive) {
             VoiceOrb(
                 isActive = isVoiceActive,
                 onToggle = {
@@ -204,7 +205,6 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        // Room Database Voice History Drawer / Card
         if (showVoiceHistory) {
             VoiceInteractionHistoryComponent(
                 interactions = voiceHistory,
@@ -222,7 +222,7 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(messages) { msg ->
-                val isUser = msg.sender == "user"
+                val isUser = msg.isFromUser
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
@@ -237,13 +237,10 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                                     bottomEnd = if (isUser) 2.dp else 12.dp
                                 )
                             )
-                            .background(
-                                if (isUser) QuantumViolet
-                                else CyberSurface
-                            )
+                            .background(if (isUser) QuantumViolet else CyberSurface)
                             .border(
                                 1.dp,
-                                if (isUser) QuantumViolet else selectedAgent.primaryColor.copy(alpha = 0.4f),
+                                if (isUser) QuantumViolet else selectedAgentColor.copy(alpha = 0.4f),
                                 RoundedCornerShape(12.dp)
                             )
                             .padding(12.dp)
@@ -251,7 +248,7 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                         Column {
                             Text(
                                 text = if (isUser) "You" else selectedAgent.name,
-                                color = if (isUser) NeonCyan else selectedAgent.primaryColor,
+                                color = if (isUser) NeonCyan else selectedAgentColor,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp
                             )
@@ -310,7 +307,7 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = CyberSurface,
                     unfocusedContainerColor = CyberSurface,
-                    focusedBorderColor = selectedAgent.primaryColor,
+                    focusedBorderColor = selectedAgentColor,
                     unfocusedBorderColor = CyberBorder,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White
@@ -332,7 +329,7 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
                     .testTag("chat_send_button")
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(selectedAgent.primaryColor)
+                    .background(selectedAgentColor)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
@@ -343,4 +340,3 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
         }
     }
 }
-

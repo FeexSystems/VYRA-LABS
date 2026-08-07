@@ -11,11 +11,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.DynamicFeed
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -39,6 +42,9 @@ import com.example.vyra.theme.TextMuted
 
 sealed class NavItem(val route: String, val label: String, val icon: ImageVector) {
     object Dashboard : NavItem("dashboard", "Overview", Icons.Default.Dashboard)
+    object Homefeed : NavItem("homefeed", "Feed", Icons.Default.DynamicFeed)
+    object VyraShow : NavItem("vyra_show", "Shows", Icons.Default.Tv)
+    object Chat : NavItem("chat", "Chat", Icons.Default.Chat)
     object Profile : NavItem("profile", "Profile", Icons.Default.AccountCircle)
     object Agents : NavItem("agents", "AI Agents", Icons.Default.Psychology)
     object FanDna : NavItem("fan_dna", "Fan DNA", Icons.Default.People)
@@ -56,12 +62,13 @@ fun CyberpunkBottomNav(
 
     val items = listOf(
         NavItem.Dashboard,
+        NavItem.Homefeed,
+        NavItem.VyraShow,
+        NavItem.Chat,
         NavItem.Profile,
         NavItem.Agents,
         NavItem.FanDna,
-        NavItem.Optimizer,
-        NavItem.Monetization,
-        NavItem.Settings
+        NavItem.Monetization
     )
 
     NavigationBar(

@@ -16,3 +16,17 @@ val CyberAmber = Color(0xFFFFB800)
 val TextPrimary = Color(0xFFFFFFFF)
 val TextSecondary = Color(0xFFA0A0C0)
 val TextMuted = Color(0xFF606080)
+
+fun parseHexColor(hex: String): Color {
+    return try {
+        val cleanHex = hex.removePrefix("#")
+        val colorInt = if (cleanHex.length == 6) {
+            android.graphics.Color.parseColor("#$cleanHex")
+        } else {
+            android.graphics.Color.parseColor(hex)
+        }
+        Color(colorInt)
+    } catch (e: Exception) {
+        NeonCyan
+    }
+}

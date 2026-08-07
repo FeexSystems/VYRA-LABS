@@ -1,6 +1,5 @@
 package com.example.vyra.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -25,13 +24,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CurrencyExchange
-import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
@@ -76,7 +73,6 @@ import com.example.vyra.ui.components.CyberpunkCard
 import com.example.vyra.ui.viewmodels.ProfileViewModel
 import com.example.vyra.ui.viewmodels.SettingsViewModel
 import com.example.vyra.ui.viewmodels.VoicePersonalities
-import com.example.vyra.ui.viewmodels.VoicePersonality
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -98,7 +94,6 @@ fun SettingsScreen(
     val glowEffects by viewModel.glowEffects.collectAsState()
 
     val privacyModeEnabled by viewModel.privacyModeEnabled.collectAsState()
-    val cloudSyncEnabled by viewModel.cloudSyncEnabled.collectAsState()
 
     val selectedCurrency by profileViewModel.selectedCurrency.collectAsState()
 
@@ -180,7 +175,6 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Interactive Currency Dropdown Selector
                     var dropdownExpanded by remember { mutableStateOf(false) }
 
                     Box(
@@ -230,7 +224,7 @@ fun SettingsScreen(
                                 .background(CyberSurface)
                                 .border(1.dp, NeonGreen, RoundedCornerShape(8.dp))
                         ) {
-                            AfricanCurrencies.all.forEach { currency ->
+                            AfricanCurrencies.list.forEach { currency ->
                                 androidx.compose.material3.DropdownMenuItem(
                                     text = {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -262,7 +256,7 @@ fun SettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        AfricanCurrencies.all.forEach { currency ->
+                        AfricanCurrencies.list.forEach { currency ->
                             val isSelected = currency.code == selectedCurrency.code
                             Box(
                                 modifier = Modifier
@@ -343,7 +337,7 @@ fun SettingsScreen(
             }
         }
 
-        // Voice Agent Personality Selector Section (ElevenLabs Integration)
+        // Voice Agent Personality Selector Section
         item {
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -457,7 +451,6 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Traits pill
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
@@ -475,7 +468,6 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Sample Phrase Container
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -512,7 +504,6 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Play Sample Button Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -546,7 +537,6 @@ fun SettingsScreen(
                         }
                     }
 
-                    // Playing Status & Progress Indicator
                     if (isPlaying) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Column {
@@ -808,7 +798,6 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Manual Clear History Action
                     OutlinedButton(
                         onClick = { viewModel.clearLocalInteractionHistory() },
                         modifier = Modifier

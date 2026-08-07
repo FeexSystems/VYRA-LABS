@@ -46,7 +46,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.vyra.data.db.VoiceInteraction
+import com.example.vyra.data.models.VoiceInteraction
 import com.example.vyra.service.ElevenLabsAudioService
 import com.example.vyra.theme.CyberBorder
 import com.example.vyra.theme.CyberSurface
@@ -56,22 +56,17 @@ import com.example.vyra.theme.NeonGreen
 import com.example.vyra.theme.QuantumViolet
 import com.example.vyra.theme.TextMuted
 import com.example.vyra.theme.TextSecondary
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun VoiceInteractionHistoryComponent(
     interactions: List<VoiceInteraction>,
-    onDeleteInteraction: (Long) -> Unit,
+    onDeleteInteraction: (String) -> Unit,
     onClearAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    var playingId by remember { mutableStateOf<Long?>(null) }
-
-    val dateFormat = remember { SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()) }
+    var playingId by remember { mutableStateOf<String?>(null) }
 
     CyberpunkCard(
         modifier = modifier.fillMaxWidth(),
@@ -93,7 +88,7 @@ fun VoiceInteractionHistoryComponent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "VOICE INTERACTIONS HISTORY (ROOM CACHED)",
+                        text = "VOICE INTERACTIONS HISTORY",
                         color = Color.White,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Black,
@@ -192,7 +187,7 @@ fun VoiceInteractionHistoryComponent(
                                                 fontSize = 12.sp
                                             )
                                             Text(
-                                                text = dateFormat.format(Date(item.timestamp)),
+                                                text = item.timestamp,
                                                 color = TextMuted,
                                                 fontSize = 9.sp
                                             )

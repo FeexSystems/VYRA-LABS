@@ -45,7 +45,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Security
+import coil.compose.AsyncImage
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Verified
@@ -111,7 +113,10 @@ import com.example.vyra.ui.viewmodels.ProfileViewModel
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel
+    viewModel: ProfileViewModel,
+    settingsViewModel: com.example.vyra.ui.viewmodels.SettingsViewModel? = null,
+    monetizationViewModel: com.example.vyra.ui.viewmodels.MonetizationViewModel? = null,
+    homeFeedViewModel: com.example.vyra.ui.viewmodels.HomeFeedViewModel? = null
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
     val selectedCurrency by viewModel.selectedCurrency.collectAsState()
@@ -121,6 +126,9 @@ fun ProfileScreen(
     var showLinkPlatformDialog by remember { mutableStateOf<PlatformLink?>(null) }
     var showConfigureGatewayDialog by remember { mutableStateOf<PaymentGateway?>(null) }
     var showTransactionDialog by remember { mutableStateOf(false) }
+
+    var isRevenueExpanded by remember { mutableStateOf(false) }
+    var isSettingsExpanded by remember { mutableStateOf(false) }
 
     val activeRole = userProfile.activeRole
     val creator = userProfile.creatorDetails
@@ -297,7 +305,7 @@ fun ProfileScreen(
                                             .padding(horizontal = 8.dp, vertical = 2.dp)
                                     ) {
                                         Text(
-                                            text = if (activeRole == UserRole.CREATOR) "CREATOR PERSONA • VERIFIED" else "FAN PERSONA • ${fan.fanRank}",
+                                            text = if (activeRole == UserRole.CREATOR) "CREATOR PERSONA • VERIFIED" else "FAN PERSONA • ${fan.tier}",
                                             color = if (activeRole == UserRole.CREATOR) ElectricMagenta else NeonGreen,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.ExtraBold
@@ -317,6 +325,36 @@ fun ProfileScreen(
                         fontSize = 12.sp,
                         lineHeight = 16.sp
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Share Profile & Revyralize Actions
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { /* Share Profile */ },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = NeonCyan, contentColor = Color.Black),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.IosShare, contentDescription = "Share", modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("SHARE PROFILE", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = { /* Revyralize Profile */ },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = ElectricMagenta, contentColor = Color.White),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.Repeat, contentDescription = "Revyralize", modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("REVYRALIZE", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(14.dp))
 
@@ -525,18 +563,23 @@ fun ProfileScreen(
                     ) {
                         if (activeRole == UserRole.CREATOR) {
                             ProfileStatItem(
-                                label = "VIRALITY SCORE",
-                                value = "${creator.viralityScore}/100",
+                                label = "POSTS",
+                                value = "${creator.postsCount}",
                                 color = NeonGreen
                             )
                             ProfileStatItem(
-                                label = "SUBSCRIBERS",
-                                value = "${creator.totalSubscribers}",
+                                label = "FOLLOWERS",
+                                value = "${creator.followersCount}",
                                 color = NeonCyan
                             )
                             ProfileStatItem(
-                                label = "EST. MRR",
-                                value = selectedCurrency.formatAmount(creator.monthlyRevenueUsd),
+                                label = "FOLLOWING",
+                                value = "184",
+                                color = QuantumViolet
+                            )
+                            ProfileStatItem(
+                                label = "LIKES",
+                                value = "${creator.likesCount}",
                                 color = ElectricMagenta
                             )
                         } else {
@@ -621,6 +664,190 @@ fun ProfileScreen(
                         fontSize = 11.sp,
                         lineHeight = 15.sp
                     )
+                }
+            }
+        }
+
+        // 4. POSTS & MEDIA ACTIVITY GRID (TILE/GRID FORMAT FRAMES)
+        item {
+            CyberpunkCard(
+                modifier = Modifier.fillMaxWidth(),
+                borderColor = NeonCyan
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "POSTS & MEDIA ACTIVITY TILES",
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                            Text(
+                                text = "Posts, video frames, and music casts published on VYRA",
+                                color = TextMuted,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val samplePostMedia = listOf(
+                        Pair("https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800", "Neon Horizons"),
+                        Pair("https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800", "3D Stage Visuals"),
+                        Pair("https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800", "Fan Cover Sax"),
+                        Pair("https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800", "Lagos Cyber Fest")
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        samplePostMedia.take(2).forEach { (url, title) ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(110.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .border(1.dp, CyberBorder, RoundedCornerShape(10.dp))
+                            ) {
+                                coil.compose.AsyncImage(
+                                    model = url,
+                                    contentDescription = title,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f))
+                                            )
+                                        )
+                                        .padding(6.dp),
+                                    contentAlignment = Alignment.BottomStart
+                                ) {
+                                    Text(title, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        samplePostMedia.drop(2).take(2).forEach { (url, title) ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(110.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .border(1.dp, CyberBorder, RoundedCornerShape(10.dp))
+                            ) {
+                                coil.compose.AsyncImage(
+                                    model = url,
+                                    contentDescription = title,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f))
+                                            )
+                                        )
+                                        .padding(6.dp),
+                                    contentAlignment = Alignment.BottomStart
+                                ) {
+                                    Text(title, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 5. COLLAPSIBLE REVENUE SCREEN SECTION
+        item {
+            CyberpunkCard(
+                modifier = Modifier.fillMaxWidth(),
+                borderColor = ElectricMagenta
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isRevenueExpanded = !isRevenueExpanded },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = ElectricMagenta)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text("REVENUE & MONETIZATION METRICS", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text("Subscribers, African gateways & MRR", color = TextMuted, fontSize = 11.sp)
+                            }
+                        }
+                        Text(if (isRevenueExpanded) "▲ CLOSE" else "▼ OPEN", color = ElectricMagenta, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    AnimatedVisibility(visible = isRevenueExpanded) {
+                        Column(modifier = Modifier.padding(top = 16.dp)) {
+                            if (monetizationViewModel != null) {
+                                MonetizationScreen(viewModel = monetizationViewModel, profileViewModel = viewModel)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 6. COLLAPSIBLE SETTINGS SCREEN MENU SECTION
+        item {
+            CyberpunkCard(
+                modifier = Modifier.fillMaxWidth(),
+                borderColor = QuantumViolet
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isSettingsExpanded = !isSettingsExpanded },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Security, contentDescription = null, tint = QuantumViolet)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text("SETTINGS & SYSTEM CONFIGURATION", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text("Billing & currency, voice agents & account security", color = TextMuted, fontSize = 11.sp)
+                            }
+                        }
+                        Text(if (isSettingsExpanded) "▲ CLOSE" else "▼ OPEN", color = QuantumViolet, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    AnimatedVisibility(visible = isSettingsExpanded) {
+                        Column(modifier = Modifier.padding(top = 16.dp)) {
+                            if (settingsViewModel != null) {
+                                SettingsScreen(viewModel = settingsViewModel, profileViewModel = viewModel)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -891,7 +1118,7 @@ private fun GatewayIntegrationRow(
     onSetPrimary: () -> Unit,
     onConfigure: () -> Unit
 ) {
-    val gateColor = Color(gateway.badgeColorHex)
+    val gateColor = com.example.vyra.theme.parseHexColor(gateway.badgeColorHex)
 
     Box(
         modifier = Modifier
@@ -1073,14 +1300,14 @@ private fun PlatformIntegrationRow(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "• ${platform.category}",
+                            text = "• ${platform.followersCount}",
                             color = TextMuted,
                             fontSize = 10.sp
                         )
                     }
 
                     Text(
-                        text = "${platform.handle} • ${platform.statsText}",
+                        text = "${platform.handle} • ${platform.lastSynced}",
                         color = if (platform.isConnected) NeonGreen else TextSecondary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -1207,7 +1434,7 @@ private fun SelectAfricanCurrencyModal(
                         .height(380.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    items(AfricanCurrencies.all) { currency ->
+                    items(AfricanCurrencies.list) { currency ->
                         val isSelected = currency.code == currentCurrency.code
                         Row(
                             modifier = Modifier
@@ -1504,7 +1731,7 @@ private fun ConfigureGatewayModal(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .border(1.5.dp, Color(gateway.badgeColorHex), RoundedCornerShape(16.dp)),
+                .border(1.5.dp, com.example.vyra.theme.parseHexColor(gateway.badgeColorHex), RoundedCornerShape(16.dp)),
             color = CyberBg
         ) {
             Column(
@@ -1514,7 +1741,7 @@ private fun ConfigureGatewayModal(
             ) {
                 Text(
                     text = "CONFIGURE ${gateway.name.uppercase()}",
-                    color = Color(gateway.badgeColorHex),
+                    color = com.example.vyra.theme.parseHexColor(gateway.badgeColorHex),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -1535,7 +1762,7 @@ private fun ConfigureGatewayModal(
                     onValueChange = { accountId = it },
                     label = { Text("Account Number / Merchant ID / Phone") },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(gateway.badgeColorHex),
+                        focusedBorderColor = com.example.vyra.theme.parseHexColor(gateway.badgeColorHex),
                         unfocusedBorderColor = CyberBorder
                     ),
                     modifier = Modifier.fillMaxWidth()
@@ -1548,7 +1775,7 @@ private fun ConfigureGatewayModal(
                     onValueChange = { accountName = it },
                     label = { Text("Account Holder Name") },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(gateway.badgeColorHex),
+                        focusedBorderColor = com.example.vyra.theme.parseHexColor(gateway.badgeColorHex),
                         unfocusedBorderColor = CyberBorder
                     ),
                     modifier = Modifier.fillMaxWidth()
@@ -1567,7 +1794,7 @@ private fun ConfigureGatewayModal(
                     Button(
                         onClick = { onSave(accountId, accountName) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(gateway.badgeColorHex),
+                            containerColor = com.example.vyra.theme.parseHexColor(gateway.badgeColorHex),
                             contentColor = Color.Black
                         ),
                         shape = RoundedCornerShape(8.dp)

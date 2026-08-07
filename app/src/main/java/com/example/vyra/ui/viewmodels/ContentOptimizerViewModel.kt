@@ -3,12 +3,14 @@ package com.example.vyra.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vyra.data.VyraRepository
-import com.example.vyra.data.db.ContentPost
+import com.example.vyra.data.models.ContentPost
+import com.example.vyra.data.models.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class ContentOptimizerViewModel(private val repository: VyraRepository) : ViewModel() {
 
@@ -45,24 +47,27 @@ class ContentOptimizerViewModel(private val repository: VyraRepository) : ViewMo
         if (text.isBlank()) return
 
         val platform = _selectedPlatform.value
-        val virality = (85..99).random()
         val hashtags = when (platform) {
-            "TikTok" -> "#FYP #Cyberpunk #Creator #Viral #VYRA"
-            "Instagram" -> "#CreatorEconomy #DigitalArt #Tech #Innovation"
-            "YouTube" -> "#Shorts #TechReview #AI #Future"
-            else -> "#VyraAI #CreatorLife #Growth #Tech"
+            "TikTok" -> listOf("FYP", "Cyberpunk", "Creator", "Viral", "VYRA")
+            "Instagram" -> listOf("CreatorEconomy", "DigitalArt", "Tech", "Innovation")
+            "YouTube" -> listOf("Shorts", "TechReview", "AI", "Future")
+            else -> listOf("VyraAI", "CreatorLife", "Growth", "Tech")
         }
 
-        val optimizedText = "⚡ [OPTIMIZED FOR $platform]: $text\n\n🔥 Call to Action: Follow for daily cyber tech insights & exclusive drops! 💎"
-
         val newPost = ContentPost(
+            id = "opt_${UUID.randomUUID().toString().take(6)}",
             title = text.take(30) + "...",
-            originalText = text,
-            optimizedText = optimizedText,
-            platform = platform,
-            viralityScore = virality,
-            hashtags = hashtags,
-            status = "Draft"
+            content = "⚡ [OPTIMIZED FOR $platform]: $text\n\n🔥 Call to Action: Follow for daily cyber tech insights & exclusive drops! 💎",
+            authorName = "Amina Vyra",
+            authorHandle = "@AminaVyra",
+            authorRole = UserRole.CREATOR,
+            mediaType = "text",
+            castCount = 14,
+            isCasted = false,
+            revyralCount = 2,
+            commentCount = 1,
+            timestamp = "Just now",
+            tags = hashtags
         )
 
         _generatedOptimization.value = newPost
@@ -72,13 +77,13 @@ class ContentOptimizerViewModel(private val repository: VyraRepository) : ViewMo
         }
     }
 
-    fun updateStatus(postId: Long, newStatus: String) {
+    fun updateStatus(postId: String, newStatus: String) {
         viewModelScope.launch {
             repository.updatePostStatus(postId, newStatus)
         }
     }
 
-    fun deletePost(postId: Long) {
+    fun deletePost(postId: String) {
         viewModelScope.launch {
             repository.deletePost(postId)
         }

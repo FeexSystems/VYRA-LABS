@@ -2,8 +2,8 @@ package com.example.vyra.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vyra.data.AnalyticsCacheData
 import com.example.vyra.data.VyraRepository
-import com.example.vyra.data.db.AnalyticsCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +16,7 @@ data class DashboardMetrics(
     val totalFans: Int = 1420,
     val vipFans: Int = 185,
     val engagementRate: Double = 8.7,
-    val viralityScore: Int = 92,
+    val viralityScore: Double = 92.0,
     val activeVoiceSessions: Int = 38
 )
 
@@ -47,30 +47,27 @@ class DashboardViewModel(private val repository: VyraRepository) : ViewModel() {
     private fun observeCachedMetrics() {
         viewModelScope.launch {
             repository.cachedAnalytics.collectLatest { cached ->
-                if (cached != null) {
-                    _metrics.value = DashboardMetrics(
-                        monthlyRevenue = cached.monthlyRevenue,
-                        revenueGrowthPercent = cached.revenueGrowthPercent,
-                        totalFans = cached.totalFans,
-                        vipFans = (cached.totalFans * 0.15).toInt(),
-                        engagementRate = 9.2,
-                        viralityScore = cached.viralityScore,
-                        activeVoiceSessions = 42
-                    )
-                }
+                _metrics.value = DashboardMetrics(
+                    monthlyRevenue = cached.monthlyRevenue,
+                    revenueGrowthPercent = cached.revenueGrowthPercent,
+                    totalFans = cached.totalFans,
+                    vipFans = (cached.totalFans * 0.15).toInt(),
+                    engagementRate = 9.2,
+                    viralityScore = cached.viralityScore,
+                    activeVoiceSessions = 42
+                )
             }
         }
     }
 
-    fun updateMetricsLocally(newRevenue: Double, newFans: Int, newVirality: Int) {
+    fun updateMetricsLocally(newRevenue: Double, newFans: Int, newVirality: Double) {
         viewModelScope.launch {
             repository.saveAnalyticsCache(
-                AnalyticsCache(
+                AnalyticsCacheData(
                     monthlyRevenue = newRevenue,
                     totalFans = newFans,
                     viralityScore = newVirality,
-                    revenueGrowthPercent = 32.1,
-                    activeSubscribers = (newFans * 0.3).toInt()
+                    revenueGrowthPercent = 32.1
                 )
             )
         }

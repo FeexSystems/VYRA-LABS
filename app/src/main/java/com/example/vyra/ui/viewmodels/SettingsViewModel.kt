@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vyra.data.VyraRepository
+import com.example.vyra.data.models.AfricanCurrencies
 import com.example.vyra.theme.ElectricMagenta
 import com.example.vyra.theme.NeonCyan
 import com.example.vyra.theme.QuantumViolet
@@ -83,10 +84,10 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
     private val _voiceModeEnabled = MutableStateFlow(true)
     val voiceModeEnabled: StateFlow<Boolean> = _voiceModeEnabled.asStateFlow()
 
-    private val _creatorName = MutableStateFlow("Kaiser Prime")
+    private val _creatorName = MutableStateFlow("Amina Vyra")
     val creatorName: StateFlow<String> = _creatorName.asStateFlow()
 
-    private val _handle = MutableStateFlow("@kaiser_prime")
+    private val _handle = MutableStateFlow("@AminaVyra")
     val handle: StateFlow<String> = _handle.asStateFlow()
 
     private val _bio = MutableStateFlow("Cyberpunk digital artist & creator powered by VYRA AI.")
@@ -148,8 +149,10 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
 
     fun setBillingCurrency(currencyCode: String) {
         _selectedBillingCurrency.value = currencyCode
+        val curr = AfricanCurrencies.findByCode(currencyCode)
         viewModelScope.launch {
-            repository.saveBillingCurrencyPreference(currencyCode)
+            repository.saveBillingCurrencyPreference(curr.code, curr.name, curr.symbol)
+            repository.savePreference("currency_code", currencyCode)
         }
     }
 
@@ -236,14 +239,12 @@ class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
 
         playbackJob = viewModelScope.launch {
             try {
-                // Phase 1: Synthesizing voice via ElevenLabs API
                 _playbackStatus.value = "ElevenLabs API: Synthesizing '${personality.name}' audio..."
                 delay(600)
 
                 _playbackStatus.value = "ElevenLabs Stream: Streaming 24kHz PCM Audio (${personality.elevenLabsVoiceId})..."
                 delay(400)
 
-                // Phase 2: Playing back audio stream sample (~3.5 sec audio playback simulation)
                 val totalSteps = 35
                 for (step in 1..totalSteps) {
                     _playbackProgress.value = step.toFloat() / totalSteps

@@ -58,13 +58,19 @@ import com.example.vyra.theme.QuantumViolet
 import com.example.vyra.theme.TextMuted
 import com.example.vyra.theme.TextSecondary
 import com.example.vyra.ui.components.CyberpunkCard
+import com.example.vyra.ui.viewmodels.ContentOptimizerViewModel
 import com.example.vyra.ui.viewmodels.FanDnaViewModel
 
 @Composable
-fun FanDnaScreen(viewModel: FanDnaViewModel) {
+fun FanDnaScreen(
+    viewModel: FanDnaViewModel,
+    optimizerViewModel: ContentOptimizerViewModel? = null
+) {
     val fans by viewModel.allFans.collectAsState()
     val filter by viewModel.selectedTierFilter.collectAsState()
     val query by viewModel.searchQuery.collectAsState()
+
+    var activeTab by remember { mutableStateOf(0) } // 0 = Fan DNA, 1 = Optimizer
 
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -79,19 +85,71 @@ fun FanDnaScreen(viewModel: FanDnaViewModel) {
         (query.isBlank() || fan.name.contains(query, ignoreCase = true) || fan.username.contains(query, ignoreCase = true))
     }
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(CyberBg)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        // Tab Selector Row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(CyberSurface)
+                .border(1.dp, CyberBorder, RoundedCornerShape(12.dp))
+                .padding(4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (activeTab == 0) ElectricMagenta else Color.Transparent)
+                    .clickable { activeTab = 0 }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
             ) {
+                Text(
+                    text = "FAN DNA PROFILES",
+                    color = if (activeTab == 0) Color.White else TextMuted,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (activeTab == 1) NeonCyan else Color.Transparent)
+                    .clickable { activeTab = 1 }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "OPTIMIZER & HOOKS",
+                    color = if (activeTab == 1) Color.Black else TextMuted,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp
+                )
+            }
+        }
+
+        if (activeTab == 1 && optimizerViewModel != null) {
+            OptimizerScreen(viewModel = optimizerViewModel)
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                 Column {
                     Text(
                         text = "FAN DNA ANALYTICS",
@@ -277,6 +335,8 @@ fun FanDnaScreen(viewModel: FanDnaViewModel) {
             }
         }
     }
+}
+}
 
     // Add Fan Dialog
     if (showAddDialog) {

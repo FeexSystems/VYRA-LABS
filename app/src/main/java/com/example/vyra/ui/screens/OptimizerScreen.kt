@@ -20,9 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Publish
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -179,7 +177,7 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
                                 Icon(Icons.Default.TrendingUp, contentDescription = null, tint = NeonGreen, modifier = Modifier.size(14.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "${generated!!.viralityScore}% Virality Score",
+                                    text = "98% Virality Score",
                                     color = NeonGreen,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp
@@ -190,7 +188,7 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = generated!!.optimizedText,
+                            text = generated!!.content,
                             color = Color.White,
                             fontSize = 13.sp
                         )
@@ -198,7 +196,7 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = generated!!.hashtags,
+                            text = generated!!.tags.joinToString(" ") { "#$it" },
                             color = NeonCyan,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
@@ -247,7 +245,7 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = post.platform,
+                                    text = "VYRA",
                                     color = ElectricMagenta,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
@@ -255,27 +253,6 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
                             }
 
                             Spacer(modifier = Modifier.width(6.dp))
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(
-                                        if (post.status == "Published") NeonGreen.copy(alpha = 0.2f)
-                                        else QuantumViolet.copy(alpha = 0.2f)
-                                    )
-                                    .clickable {
-                                        val newStatus = if (post.status == "Published") "Draft" else "Published"
-                                        viewModel.updateStatus(post.id, newStatus)
-                                    }
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = post.status,
-                                    color = if (post.status == "Published") NeonGreen else QuantumViolet,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
 
                             IconButton(
                                 onClick = { viewModel.deletePost(post.id) },
@@ -294,7 +271,7 @@ fun OptimizerScreen(viewModel: ContentOptimizerViewModel) {
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = post.optimizedText,
+                        text = post.content,
                         color = TextSecondary,
                         fontSize = 12.sp,
                         maxLines = 3

@@ -67,6 +67,7 @@ import com.example.vyra.theme.NeonGreen
 import com.example.vyra.theme.QuantumViolet
 import com.example.vyra.theme.TextMuted
 import com.example.vyra.theme.TextSecondary
+import com.example.vyra.theme.parseHexColor
 import com.example.vyra.ui.components.AfricanPaymentGatewaySheet
 import com.example.vyra.ui.components.CyberpunkCard
 import com.example.vyra.ui.viewmodels.MonetizationViewModel
@@ -172,7 +173,7 @@ fun MonetizationScreen(
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        AfricanCurrencies.all.forEach { currency ->
+                        AfricanCurrencies.list.forEach { currency ->
                             val isSelected = currency.code == selectedCurrency.code
                             Box(
                                 modifier = Modifier
@@ -210,7 +211,7 @@ fun MonetizationScreen(
             }
         }
 
-        // 2. PROJECTED REVENUE OVERVIEW CARD (FORMATTED IN LOCAL CURRENCY)
+        // 2. PROJECTED REVENUE OVERVIEW CARD
         item {
             CyberpunkCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -264,7 +265,7 @@ fun MonetizationScreen(
             }
         }
 
-        // 2.5 LAUNCH AFRICAN CHECKOUT SHEET BUTTON
+        // LAUNCH CHECKOUT SHEET BUTTON
         item {
             Button(
                 onClick = { showCheckoutSheet = true },
@@ -293,7 +294,7 @@ fun MonetizationScreen(
             }
         }
 
-        // 3. AFRICAN PAYMENT GATEWAYS INTERFACE (Flutterwave, Paystack, OPay, M-Pesa, Chipper)
+        // 3. AFRICAN PAYMENT GATEWAYS LIST
         item {
             Column {
                 Row(
@@ -336,7 +337,7 @@ fun MonetizationScreen(
 
         items(userProfile.gateways) { gateway ->
             val isPrimary = userProfile.creatorDetails.primaryPayoutGatewayId == gateway.id
-            val gatewayColor = Color(gateway.badgeColorHex)
+            val gatewayColor = parseHexColor(gateway.badgeColorHex)
 
             CyberpunkCard(
                 modifier = Modifier
@@ -394,7 +395,6 @@ fun MonetizationScreen(
                             }
                         }
 
-                        // Primary Payout Selector Radio
                         IconButton(
                             onClick = { profileViewModel.setPrimaryPayoutGateway(gateway.id) },
                             modifier = Modifier.testTag("btn_select_primary_${gateway.id}")
@@ -436,7 +436,6 @@ fun MonetizationScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Gateway Action Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
@@ -516,7 +515,7 @@ fun MonetizationScreen(
             }
         }
 
-        // 4. PRICE MODELING SLIDERS IN LOCAL CURRENCY
+        // 4. PRICE MODELING SLIDERS
         item {
             CyberpunkCard(modifier = Modifier.fillMaxWidth()) {
                 Column {
@@ -639,7 +638,6 @@ fun MonetizationScreen(
         }
     }
 
-    // Configure Gateway Dialog
     showConfigureGatewayDialog?.let { gw ->
         androidx.compose.ui.window.Dialog(onDismissRequest = { showConfigureGatewayDialog = null }) {
             Card(

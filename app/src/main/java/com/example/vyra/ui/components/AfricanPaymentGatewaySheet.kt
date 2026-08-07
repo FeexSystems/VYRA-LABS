@@ -15,13 +15,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CurrencyExchange
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Payment
 import androidx.compose.material3.Button
@@ -30,7 +28,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,7 +50,6 @@ import com.example.vyra.data.models.PaymentGateway
 import com.example.vyra.data.models.PaymentTransaction
 import com.example.vyra.theme.CyberBorder
 import com.example.vyra.theme.CyberSurface
-import com.example.vyra.theme.ElectricMagenta
 import com.example.vyra.theme.NeonCyan
 import com.example.vyra.theme.NeonGreen
 import com.example.vyra.theme.TextMuted
@@ -66,7 +62,7 @@ fun AfricanPaymentGatewaySheet(
     amountUsd: Double,
     selectedCurrency: AfricanCurrency,
     onCurrencyChanged: (AfricanCurrency) -> Unit,
-    gateways: List<PaymentGateway> = AfricanPaymentGatewaysDefaults.defaultGateways,
+    gateways: List<PaymentGateway> = AfricanPaymentGatewaysDefaults.all,
     onDismiss: () -> Unit,
     onCheckoutSuccess: (PaymentTransaction) -> Unit
 ) {
@@ -200,7 +196,6 @@ fun AfricanPaymentGatewaySheet(
                     }
                 } else {
                     // Checkout View
-                    // Amount Banner
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -253,7 +248,6 @@ fun AfricanPaymentGatewaySheet(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Local Currency Selector Chips
                     Text(
                         text = "SELECT LOCAL BILLING CURRENCY",
                         color = TextMuted,
@@ -267,7 +261,7 @@ fun AfricanPaymentGatewaySheet(
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        AfricanCurrencies.all.forEach { curr ->
+                        AfricanCurrencies.list.forEach { curr ->
                             val isSel = curr.code == selectedCurrency.code
                             Box(
                                 modifier = Modifier
@@ -290,7 +284,6 @@ fun AfricanPaymentGatewaySheet(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Gateway Selection List
                     Text(
                         text = "CHOOSE AFRICAN PAYMENT GATEWAY",
                         color = TextMuted,
@@ -301,7 +294,7 @@ fun AfricanPaymentGatewaySheet(
 
                     gateways.forEach { gw ->
                         val isSelected = gw.id == selectedGatewayId
-                        val gwColor = Color(gw.badgeColorHex)
+                        val parseColor = try { Color(android.graphics.Color.parseColor(gw.badgeColorHex)) } catch (_: Exception) { NeonCyan }
 
                         Box(
                             modifier = Modifier
@@ -309,8 +302,8 @@ fun AfricanPaymentGatewaySheet(
                                 .padding(vertical = 3.dp)
                                 .testTag("sheet_gateway_${gw.id}")
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (isSelected) gwColor.copy(alpha = 0.2f) else CyberSurface)
-                                .border(1.dp, if (isSelected) gwColor else CyberBorder, RoundedCornerShape(10.dp))
+                                .background(if (isSelected) parseColor.copy(alpha = 0.2f) else CyberSurface)
+                                .border(1.dp, if (isSelected) parseColor else CyberBorder, RoundedCornerShape(10.dp))
                                 .clickable { selectedGatewayId = gw.id }
                                 .padding(10.dp)
                         ) {
@@ -324,13 +317,13 @@ fun AfricanPaymentGatewaySheet(
                                         modifier = Modifier
                                             .size(32.dp)
                                             .clip(RoundedCornerShape(6.dp))
-                                            .background(gwColor.copy(alpha = 0.25f)),
+                                            .background(parseColor.copy(alpha = 0.25f)),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.AccountBalanceWallet,
                                             contentDescription = null,
-                                            tint = gwColor,
+                                            tint = parseColor,
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
@@ -354,7 +347,7 @@ fun AfricanPaymentGatewaySheet(
                                     Icon(
                                         imageVector = Icons.Default.CheckCircle,
                                         contentDescription = "Selected",
-                                        tint = gwColor,
+                                        tint = parseColor,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -364,7 +357,8 @@ fun AfricanPaymentGatewaySheet(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Trigger SDK Hook Button
+                    val parseColorCurrent = try { Color(android.graphics.Color.parseColor(currentGateway.badgeColorHex)) } catch (_: Exception) { NeonCyan }
+
                     Button(
                         onClick = {
                             isProcessing = true
@@ -383,7 +377,7 @@ fun AfricanPaymentGatewaySheet(
                             isProcessing = false
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(currentGateway.badgeColorHex),
+                            containerColor = parseColorCurrent,
                             contentColor = Color.Black
                         ),
                         modifier = Modifier

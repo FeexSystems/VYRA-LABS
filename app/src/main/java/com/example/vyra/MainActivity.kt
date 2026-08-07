@@ -21,9 +21,11 @@ import com.example.vyra.ui.components.CyberpunkHeader
 import com.example.vyra.ui.components.NavItem
 import com.example.vyra.ui.components.OnboardingOverlay
 import com.example.vyra.ui.viewmodels.AgentChatViewModel
+import com.example.vyra.ui.viewmodels.ChatViewModel
 import com.example.vyra.ui.viewmodels.ContentOptimizerViewModel
 import com.example.vyra.ui.viewmodels.DashboardViewModel
 import com.example.vyra.ui.viewmodels.FanDnaViewModel
+import com.example.vyra.ui.viewmodels.HomeFeedViewModel
 import com.example.vyra.ui.viewmodels.MonetizationViewModel
 import com.example.vyra.ui.viewmodels.ProfileViewModel
 import com.example.vyra.ui.viewmodels.SettingsViewModel
@@ -43,6 +45,8 @@ class MainActivity : ComponentActivity() {
         val optimizerViewModel = ContentOptimizerViewModel(repository)
         val monetizationViewModel = MonetizationViewModel()
         val settingsViewModel = SettingsViewModel(repository)
+        val homeFeedViewModel = HomeFeedViewModel(repository)
+        val chatViewModel = ChatViewModel(repository)
 
         setContent {
             VYRATheme {
@@ -93,7 +97,9 @@ class MainActivity : ComponentActivity() {
                         fanDnaViewModel = fanDnaViewModel,
                         optimizerViewModel = optimizerViewModel,
                         monetizationViewModel = monetizationViewModel,
-                        settingsViewModel = settingsViewModel
+                        settingsViewModel = settingsViewModel,
+                        homeFeedViewModel = homeFeedViewModel,
+                        chatViewModel = chatViewModel
                     )
                 }
             }
