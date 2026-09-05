@@ -64,6 +64,7 @@ import com.example.vyra.theme.QuantumViolet
 import com.example.vyra.theme.TextMuted
 import com.example.vyra.theme.TextSecondary
 import com.example.vyra.ui.components.CyberpunkCard
+import com.example.vyra.ui.hybrid.ChartWebView
 import com.example.vyra.ui.viewmodels.DashboardViewModel
 
 @Composable

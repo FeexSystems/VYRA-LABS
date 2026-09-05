@@ -79,4 +79,21 @@ dependencies {
     
     // Security
     implementation(libs.androidx.security.crypto)
+    
+    // Supabase
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.5.4")
+    implementation("io.github.jan-tennert.supabase:realtime-kt:2.5.4")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.5.4")
+    implementation("io.ktor:ktor-client-android:2.3.7")
+    implementation("io.ktor:ktor-client-serialization:2.3.7")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+    
+    // WorkManager for background sync
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    
+    // AI Model APIs
+    implementation("com.aallam.openai:openai-client:3.6.3")
+    implementation("io.ktor:ktor-client-cio:2.3.7")
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 }
