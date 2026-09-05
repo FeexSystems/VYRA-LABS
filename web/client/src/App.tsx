@@ -11,6 +11,7 @@ import OptimizerPage from './pages/OptimizerPage'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import Index from './pages/Index'
+import AuthPage from './pages/AuthPage'
 
 function App() {
   return (
@@ -20,6 +21,9 @@ function App() {
           {/* Main Stage & VyraShow */}
           <Route path="/" element={<VyraShowPage />} />
           <Route path="/vyra-show" element={<VyraShowPage />} />
+
+          {/* Authentication Gateway */}
+          <Route path="/auth" element={<AuthPage />} />
 
           {/* Core Feature Pages */}
           <Route path="/dashboard" element={<DashboardPage />} />

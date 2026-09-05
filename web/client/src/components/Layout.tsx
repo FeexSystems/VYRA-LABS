@@ -1,5 +1,7 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 import {
   Radio,
   LayoutDashboard,
@@ -108,6 +110,14 @@ export default function Layout({ children }: LayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [persona, setPersona] = useState<'creator' | 'fan'>('creator')
   const [selectedCurrency, setSelectedCurrency] = useState<'NGN' | 'KES' | 'ZAR' | 'GHS'>('NGN')
+  const [user, setUser] = useState<FirebaseUser | null>(null)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u)
+    })
+    return () => unsubscribe()
+  }, [])
 
   const currencySymbols = {
     NGN: '₦',
@@ -217,6 +227,24 @@ export default function Layout({ children }: LayoutProps) {
           >
             {persona === 'creator' ? '⚡ CREATOR' : '🛡️ FAN'}
           </button>
+
+          {/* Secure Gate Profile link */}
+          <Link
+            to="/auth"
+            className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-[#141424] hover:bg-[#1C1C34] border border-[#2B2B48] text-xs font-mono font-bold transition-all text-slate-300 hover:text-white"
+          >
+            {user ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                <span className="text-cyan-400 font-bold">{user.displayName ? user.displayName.split(' ')[0].toUpperCase() : 'CREATOR'}</span>
+              </>
+            ) : (
+              <>
+                <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span className="text-slate-400">🔑 CONNECT</span>
+              </>
+            )}
+          </Link>
         </div>
       </header>
 

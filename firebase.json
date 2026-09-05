@@ -65,6 +65,15 @@
       }
     ]
   },
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "GoVYRA",
+        "supportEmail": "emma.ukas10@gmail.com"
+      }
+    }
+  },
   "emulators": {
     "hosting": {
       "port": 5000
