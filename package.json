@@ -4,9 +4,9 @@
   "private": true,
   "description": "VYRA AI Agent Platform - Multi-platform monorepo orchestration",
   "scripts": {
-    "build": "npm --prefix web/client run build",
-    "build:client": "npm --prefix web/client run build",
-    "build:server": "npm --prefix web/server run build",
+    "build": "npm install --prefix web/client && npm --prefix web/client run build",
+    "build:client": "npm install --prefix web/client && npm --prefix web/client run build",
+    "build:server": "npm install --prefix web/server && npm --prefix web/server run build",
     "build:web": "npm run build:client && npm run build:server",
     "dev": "npm run dev:server & npm run dev:client",
     "dev:client": "npm --prefix web/client run dev",
@@ -15,5 +15,9 @@
     "firebase:emulate": "npx -y firebase-tools@latest emulators:start --only hosting",
     "firebase:deploy": "npx -y firebase-tools@latest deploy --only hosting",
     "build:android": "echo 'Android build verified - use gradlew build or gradlew assembleRelease'"
-  }
+  },
+  "workspaces": [
+    "web/client",
+    "web/server"
+  ]
 }
