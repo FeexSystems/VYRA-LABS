@@ -7,7 +7,7 @@ A production-ready AI-powered creator platform with integrated voice agents, rea
 ### Core Agents
 - **Bushfeexer**: Advanced content optimization and engagement analysis agent
 - **HoloKai**: Cyberpunk-themed conversation enhancement and personality modeling agent  
-- **Lord Odin**: Strategic business intelligence and creator monetization agent
+- **Feexara**: Strategic business intelligence and creator monetization agent
 
 ### Voice Integration
 - **ElevenLabs Voice Agents**: Real-time voice synthesis and conversation capabilities

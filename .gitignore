@@ -49,6 +49,12 @@ coverage/
 data/
 database/*.db
 
+# Android signing keys
+*.keystore
+*.jks
+release.keystore
+debug.keystore
+
 # Temporary files
 *.tmp
 *.temp

@@ -15,7 +15,7 @@ VYRA AI is an AI-powered creator platform rewritten natively for Android using K
 ### 🤖 AI Agents Suite & Voice Synthesis
 - **Bushfeexer**: Content & virality optimizer generating platform-specific hooks, hashtags, and formatting.
 - **HoloKai**: Cyberpunk conversation engine for automated fan responses and personality modeling.
-- **Lord Odin**: Business intelligence & monetization strategist providing pricing models and revenue projections.
+- **Feexara**: Business intelligence & monetization strategist providing pricing models and revenue projections.
 - **ElevenLabs Voice AI**: Real-time voice mode simulation and audio synthesis.
 
 ### 🧬 Fan DNA Analytics

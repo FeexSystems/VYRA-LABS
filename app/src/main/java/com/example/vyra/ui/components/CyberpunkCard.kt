@@ -34,6 +34,8 @@ fun CyberpunkCard(
         Brush.linearGradient(listOf(borderColor, CyberBorder))
     }
 
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(cornerRadius))
@@ -44,8 +46,14 @@ fun CyberpunkCard(
                 shape = RoundedCornerShape(cornerRadius)
             )
             .then(
-                if (onClick != null) Modifier.clickable { onClick() }
-                else Modifier
+                if (onClick != null) {
+                    Modifier.clickable {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onClick()
+                    }
+                } else {
+                    Modifier
+                }
             )
             .padding(16.dp),
         content = content
