@@ -96,6 +96,7 @@ fun SettingsScreen(
     val privacyModeEnabled by viewModel.privacyModeEnabled.collectAsState()
 
     val selectedCurrency by profileViewModel.selectedCurrency.collectAsState()
+    val cacheStats by viewModel.cacheStats.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -858,6 +859,113 @@ fun SettingsScreen(
                         Text(
                             text = "REPLAY ONBOARDING TOUR NOW",
                             color = Color.Black,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+
+        // Hybrid Dual-Layer Cache & State Sync Diagnostics Section
+        item {
+            CyberpunkCard(
+                modifier = Modifier.fillMaxWidth(),
+                borderColor = QuantumViolet,
+                accentGlow = QuantumViolet.copy(alpha = 0.25f)
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "HYBRID CACHE & STATE SYNC",
+                            color = QuantumViolet,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(QuantumViolet.copy(alpha = 0.2f))
+                                .border(1.dp, QuantumViolet, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "ACTIVE",
+                                color = QuantumViolet,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Real-time dual-layer LRU cache status (in-memory + Room SQLite disk cache) supporting AI responses, Chart.js datasets, and Web-to-Native state synchronization.",
+                        color = TextSecondary,
+                        fontSize = 11.sp,
+                        lineHeight = 15.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(text = "CACHE ENTRIES", color = TextMuted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "${cacheStats.size}", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                        }
+                        Column {
+                            Text(text = "HITS", color = TextMuted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "${cacheStats.hits}", color = NeonGreen, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                        }
+                        Column {
+                            Text(text = "MISSES", color = TextMuted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "${cacheStats.misses}", color = TextMuted, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                        }
+                        Column {
+                            Text(text = "HIT RATE", color = TextMuted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = String.format("%.1f%%", cacheStats.hitRate * 100),
+                                color = NeonCyan,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                        Column {
+                            Text(text = "EVICTIONS", color = TextMuted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "${cacheStats.evictions}", color = ElectricMagenta, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Policy: LRU Eviction • 5-min TTL • Real-Time Web Bridge Invalidation",
+                        color = TextMuted,
+                        fontSize = 10.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedButton(
+                        onClick = { viewModel.clearCache() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("btn_clear_hybrid_cache"),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, QuantumViolet.copy(alpha = 0.7f)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(
+                            text = "PURGE HYBRID CACHE NOW",
+                            color = QuantumViolet,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )

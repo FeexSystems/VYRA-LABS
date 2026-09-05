@@ -1,13 +1,11 @@
 [build]
-  command = "npm install --legacy-peer-deps && npm run build"
-  publish = "dist/spa"
-  functions = "netlify/functions"
+  command = "npm --prefix web/client install && npm --prefix web/client run build"
+  publish = "web/client/dist"
 
 [build.environment]
-  NODE_VERSION = "24"
+  NODE_VERSION = "20"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-

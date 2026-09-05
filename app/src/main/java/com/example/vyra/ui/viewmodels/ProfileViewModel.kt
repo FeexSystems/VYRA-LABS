@@ -72,7 +72,14 @@ class ProfileViewModel(private val repository: VyraRepository) : ViewModel() {
                         name = fanName,
                         fanTag = fanTag
                     )
-                )
+            }
+        }
+
+        viewModelScope.launch {
+            repository.billingCurrency.collect { billingPref ->
+                if (billingPref != null && billingPref.currencyCode.isNotBlank()) {
+                    _userProfile.value = _userProfile.value.copy(selectedCurrencyCode = billingPref.currencyCode)
+                }
             }
         }
     }
@@ -90,6 +97,10 @@ class ProfileViewModel(private val repository: VyraRepository) : ViewModel() {
     fun setCurrency(currencyCode: String) {
         _userProfile.value = _userProfile.value.copy(selectedCurrencyCode = currencyCode)
         savePref("currency_code", currencyCode)
+        val curr = AfricanCurrencies.findByCode(currencyCode)
+        viewModelScope.launch {
+            repository.saveBillingCurrencyPreference(curr.code, curr.name, curr.symbol)
+        }
     }
 
     fun updateCreatorProfile(name: String, handle: String, bio: String, category: String, location: String) {
@@ -132,6 +143,31 @@ class ProfileViewModel(private val repository: VyraRepository) : ViewModel() {
             } else platform
         }
         _userProfile.value = _userProfile.value.copy(platforms = updatedPlatforms)
+    }
+
+    fun addSocialHandle(name: String, handle: String) {
+        val newPlatform = ExternalPlatform(
+            id = name.lowercase().replace(" ", "_"),
+            name = name,
+            handle = if (handle.startsWith("@")) handle else "@$handle",
+            isConnected = true,
+            followerCount = "New",
+            lastSynced = "Synced just now"
+        )
+        val updated = _userProfile.value.platforms.toMutableList().apply { add(newPlatform) }
+        _userProfile.value = _userProfile.value.copy(platforms = updated)
+    }
+
+    fun updateSocialHandle(id: String, newHandle: String) {
+        val updated = _userProfile.value.platforms.map { p ->
+            if (p.id == id) p.copy(handle = if (newHandle.startsWith("@")) newHandle else "@$newHandle", isConnected = true) else p
+        }
+        _userProfile.value = _userProfile.value.copy(platforms = updated)
+    }
+
+    fun removeSocialHandle(id: String) {
+        val updated = _userProfile.value.platforms.filterNot { it.id == id }
+        _userProfile.value = _userProfile.value.copy(platforms = updated)
     }
 
     fun updateGatewayDetails(gatewayId: String, accountIdentifier: String, accountName: String) {

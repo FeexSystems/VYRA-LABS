@@ -1,27 +1,11 @@
 {
   "version": 2,
   "name": "vyra",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/spa",
-  "installCommand": "npm install --legacy-peer-deps",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { 
-        "distDir": "dist/spa",
-        "framework": "vite"
-      }
-    }
-  ],
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
+  "buildCommand": "npm --prefix web/client run build",
+  "outputDirectory": "web/client/dist",
+  "installCommand": "npm --prefix web/client install",
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/ws/(.*)", "dest": "/api/websocket" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

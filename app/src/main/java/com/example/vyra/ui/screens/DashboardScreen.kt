@@ -63,7 +63,11 @@ import com.example.vyra.theme.NeonGreen
 import com.example.vyra.theme.QuantumViolet
 import com.example.vyra.theme.TextMuted
 import com.example.vyra.theme.TextSecondary
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.example.vyra.ui.components.CyberpunkCard
+import com.example.vyra.ui.hybrid.ChartType
 import com.example.vyra.ui.hybrid.ChartWebView
 import com.example.vyra.ui.viewmodels.DashboardViewModel
 
@@ -77,6 +81,8 @@ fun DashboardScreen(
 ) {
     val metrics by viewModel.metrics.collectAsState()
     val activities by viewModel.recentActivities.collectAsState()
+    val chartData by viewModel.chartData.collectAsState()
+    var selectedChartType by remember { mutableStateOf(ChartType.Line) }
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val gridAlpha by infiniteTransition.animateFloat(
@@ -376,74 +382,80 @@ fun DashboardScreen(
                                 letterSpacing = 0.5.sp
                             )
                         }
-                        Text(
-                            text = "Last 30 Days",
-                            color = TextMuted,
-                            fontSize = 10.sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Canvas(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                    ) {
-                        val points = listOf(0.2f, 0.35f, 0.28f, 0.55f, 0.48f, 0.78f, 0.95f)
-                        val w = size.width
-                        val h = size.height
-                        val stepX = w / (points.size - 1)
-
-                        val path = Path().apply {
-                            moveTo(0f, h * (1f - points[0]))
-                            for (i in 1 until points.size) {
-                                val prevX = (i - 1) * stepX
-                                val prevY = h * (1f - points[i - 1])
-                                val curX = i * stepX
-                                val curY = h * (1f - points[i])
-                                cubicTo(
-                                    prevX + stepX / 2f, prevY,
-                                    curX - stepX / 2f, curY,
-                                    curX, curY
+                        
+                        // Chart Type Switcher Pills
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (selectedChartType == ChartType.Line) QuantumViolet else CyberSurface)
+                                    .border(1.dp, if (selectedChartType == ChartType.Line) NeonCyan else CyberBorder, RoundedCornerShape(6.dp))
+                                    .clickable { selectedChartType = ChartType.Line }
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "LINE",
+                                    color = if (selectedChartType == ChartType.Line) Color.White else TextMuted,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (selectedChartType == ChartType.Bar) QuantumViolet else CyberSurface)
+                                    .border(1.dp, if (selectedChartType == ChartType.Bar) NeonCyan else CyberBorder, RoundedCornerShape(6.dp))
+                                    .clickable { selectedChartType = ChartType.Bar }
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "BAR",
+                                    color = if (selectedChartType == ChartType.Bar) Color.White else TextMuted,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
+                    }
 
-                        // Gradient Fill Under Curve
-                        val fillPath = Path().apply {
-                            addPath(path)
-                            lineTo(w, h)
-                            lineTo(0f, h)
-                            close()
-                        }
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                        drawPath(
-                            path = fillPath,
-                            brush = Brush.verticalGradient(
-                                listOf(QuantumViolet.copy(alpha = 0.35f), Color.Transparent)
-                            )
+                    // WebView-based Chart.js Interactive Visualization
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(1.dp, CyberBorder, RoundedCornerShape(8.dp))
+                    ) {
+                        ChartWebView(
+                            data = chartData,
+                            chartType = selectedChartType,
+                            modifier = Modifier.fillMaxSize(),
+                            accentColor = if (selectedChartType == ChartType.Line) "#00F5FF" else "#8B00FF"
                         )
+                    }
 
-                        // Line Stroke
-                        drawPath(
-                            path = path,
-                            brush = Brush.horizontalGradient(
-                                listOf(NeonCyan, QuantumViolet, ElectricMagenta)
-                            ),
-                            style = Stroke(width = 3.dp.toPx())
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "• CHART.JS HYBRID ACCELERATED",
+                            color = NeonGreen,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
                         )
-
-                        // Points
-                        for (i in points.indices) {
-                            val px = i * stepX
-                            val py = h * (1f - points[i])
-                            drawCircle(
-                                color = NeonGreen,
-                                radius = 3.dp.toPx(),
-                                center = androidx.compose.ui.geometry.Offset(px, py)
-                            )
-                        }
+                        Text(
+                            text = "Peak: Sun ($2,950)",
+                            color = TextSecondary,
+                            fontSize = 10.sp
+                        )
                     }
                 }
             }

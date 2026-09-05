@@ -8,9 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import org.json.JSONObject
 
 /**
  * Native wrapper for React components
@@ -24,15 +22,12 @@ fun ReactComponentWrapper(
     onEvent: (String, Any) -> Unit = { _, _ -> }
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }
-    val json = Json { ignoreUnknownKeys = true }
     
-    val propsJson = json.encodeToString(
-        ReactComponentProps(
-            component = componentName,
-            props = props,
-            theme = "cyberpunk"
-        )
-    )
+    val propsObj = JSONObject()
+    propsObj.put("component", componentName)
+    propsObj.put("props", JSONObject(props))
+    propsObj.put("theme", "cyberpunk")
+    val propsJson = propsObj.toString()
     
     AndroidView(
         factory = { context ->
@@ -71,13 +66,6 @@ fun ReactComponentWrapper(
         }
     )
 }
-
-@Serializable
-data class ReactComponentProps(
-    val component: String,
-    val props: Map<String, Any>,
-    val theme: String
-)
 
 class ReactBridge(
     private val onEvent: (String, Any) -> Unit
@@ -154,17 +142,62 @@ private fun getReactComponentHtml(componentName: String, propsJson: String): Str
                 }
                 
                 function FanProfileCard({ profile }) {
+                    const p = profile || {};
                     return (
-                        <div style={{ padding: '16px', color: theme.colors.text }}>
-                            <h3 style={{ color: theme.colors.secondary }}>Fan Profile</h3>
+                        <div style={{ padding: '14px', color: theme.colors.text }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: theme.colors.primary, letterSpacing: '1px' }}>
+                                    ⚡ REACT COMPONENT WRAPPER
+                                </span>
+                                <span style={{ fontSize: '10px', background: 'rgba(255, 0, 122, 0.2)', color: '#FF007A', border: '1px solid #FF007A', borderRadius: '4px', padding: '2px 6px', fontWeight: 'bold' }}>
+                                    {p.tier || 'VIP'}
+                                </span>
+                            </div>
                             <div style={{ 
                                 background: theme.colors.surface, 
-                                padding: '20px',
+                                padding: '16px',
                                 borderRadius: '8px',
-                                border: `1px solid ${theme.colors.border}`
+                                border: `1px solid ${theme.colors.border}`,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '8px'
                             }}>
-                                <p>Name: {profile?.name || 'Unknown'}</p>
-                                <p>Tier: {profile?.tier || 'N/A'}</p>
+                                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFF' }}>{p.name || 'Superfan'}</div>
+                                <div style={{ fontSize: '12px', color: theme.colors.textSecondary }}>Handle: {p.username || '@fan'}</div>
+                                <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+                                    <span style={{ fontSize: '11px', color: '#00FF87', fontWeight: 'bold' }}>Spent: ${p.totalSpend || '150.00'}</span>
+                                    <span style={{ fontSize: '11px', color: '#00F5FF' }}>Platform: {p.platform || 'X'}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                    <button 
+                                        onClick={() => window.ReactBridge && window.ReactBridge.onReactEvent('upgrade_tier', JSON.stringify({ fanId: p.id }))}
+                                        style={{
+                                            background: theme.colors.secondary,
+                                            color: '#FFF',
+                                            border: 'none',
+                                            padding: '6px 12px',
+                                            borderRadius: '4px',
+                                            fontWeight: 'bold',
+                                            fontSize: '11px',
+                                            cursor: 'pointer'
+                                        }}>
+                                        Cycle Tier
+                                    </button>
+                                    <button 
+                                        onClick={() => window.ReactBridge && window.ReactBridge.onReactEvent('gift_perk', JSON.stringify({ fanId: p.id }))}
+                                        style={{
+                                            background: 'transparent',
+                                            color: theme.colors.primary,
+                                            border: `1px solid ${theme.colors.primary}`,
+                                            padding: '6px 12px',
+                                            borderRadius: '4px',
+                                            fontWeight: 'bold',
+                                            fontSize: '11px',
+                                            cursor: 'pointer'
+                                        }}>
+                                        Gift VIP Drop
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     );

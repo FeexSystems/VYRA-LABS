@@ -5,6 +5,7 @@ object DesignTokens {
         const val Primary = "#00F5FF"
         const val Secondary = "#FF007A"
         const val Accent = "#8B00FF"
+        const val Success = "#00FF87"
         const val Background = "#0A0A12"
         const val Surface = "#12121E"
         const val SurfaceVariant = "#1A1A2E"

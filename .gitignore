@@ -33,7 +33,7 @@ coverage/
 *.lcov
 .nyc_output/
 
-# Environment files (security)
+# Environment & Secrets (Security Critical)
 .env
 .env.local
 .env.production
@@ -41,6 +41,14 @@ coverage/
 .env.development
 .env.test
 *.env
+*secrets*
+*.secrets
+.production-secrets.txt
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
 
 # Database files
 *.db
@@ -116,6 +124,10 @@ backup-*.md
 .vercel/
 .netlify/
 .firebase/
+.firebaserc.local
+firebase-debug*.log
+firestore-debug*.log
+ui-debug*.log
 .serverless/
 
 # Local configuration

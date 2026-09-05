@@ -1,12 +1,17 @@
 package com.example.vyra.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,13 +33,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -50,22 +59,30 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -84,6 +101,9 @@ import com.example.vyra.ui.components.CyberpunkCard
 import com.example.vyra.ui.components.GoVyraHeader
 import com.example.vyra.ui.viewmodels.HomeFeedViewModel
 import com.example.vyra.ui.viewmodels.MonetizationViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,7 +152,7 @@ fun HomefeedScreen(
                 .background(CyberBg)
         ) {
             // Header
-            GoVyraHeader(title = "HOMEFEED", subtitle = "Public Stream • Creator & Fan Casts")
+            GoVyraHeader(title = "HOMEFEED", subtitle = "Public Stream • Viral Creator & Fan Casts")
 
             // Filters Row
             LazyRow(
@@ -184,7 +204,7 @@ fun HomefeedScreen(
                     columns = StaggeredGridCells.Fixed(2),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalItemSpacing = 10.dp
                 ) {
@@ -212,6 +232,18 @@ fun HomefeedScreen(
     }
 }
 
+/**
+ * Data model for a single floating neon particle in the Casted heart burst animation
+ */
+private data class HeartParticle(
+    val id: Long,
+    val startOffsetX: Float,
+    val targetOffsetX: Float,
+    val targetOffsetY: Float,
+    val color: Color,
+    val sizeDp: Float
+)
+
 @Composable
 fun PostMasonryCardItem(
     post: ContentPost,
@@ -220,22 +252,83 @@ fun PostMasonryCardItem(
     onRevyralize: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
 
-    // Bouncy scale animations for Casted (like) and Sighted (view) interactions
+    // Bouncy scale animation for Casted button
     val castScale by animateFloatAsState(
-        targetValue = if (post.isCasted) 1.25f else 1.0f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        targetValue = if (post.isCasted) 1.35f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
         label = "castScale"
     )
 
     val sightedScale by animateFloatAsState(
-        targetValue = if (post.isSighted) 1.2f else 1.0f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        targetValue = if (post.isSighted) 1.25f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
         label = "sightedScale"
     )
 
+    // Burst Heart Particles for "Casted" user engagement
+    val particles = remember { mutableStateListOf<HeartParticle>() }
+    var triggerBurstCounter by remember { mutableIntStateOf(0) }
+
+    // Big central heart animation for double-tap on media
+    val bigHeartScale = remember { Animatable(0f) }
+    val bigHeartAlpha = remember { Animatable(0f) }
+
+    fun triggerCastedHeartBurst() {
+        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+        onToggleCast()
+        triggerBurstCounter++
+
+        val colors = listOf(ElectricMagenta, NeonCyan, QuantumViolet, NeonGreen, Color(0xFFFF4081))
+        val newParticles = (0..6).map { i ->
+            HeartParticle(
+                id = System.nanoTime() + i,
+                startOffsetX = (Random.nextFloat() - 0.5f) * 16f,
+                targetOffsetX = (Random.nextFloat() - 0.5f) * 90f,
+                targetOffsetY = -Random.nextFloat() * 110f - 40f,
+                color = colors[Random.nextInt(colors.size)],
+                sizeDp = Random.nextFloat() * 10f + 12f
+            )
+        }
+        particles.clear()
+        particles.addAll(newParticles)
+
+        scope.launch {
+            delay(1000)
+            particles.clear()
+        }
+    }
+
+    fun triggerDoubleTapMediaBurst() {
+        if (!post.isCasted) {
+            triggerCastedHeartBurst()
+        }
+        scope.launch {
+            bigHeartScale.snapTo(0.2f)
+            bigHeartAlpha.snapTo(1f)
+            launch {
+                bigHeartScale.animateTo(
+                    targetValue = 1.4f,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)
+                )
+            }
+            delay(400)
+            bigHeartAlpha.animateTo(0f, animationSpec = tween(300, easing = FastOutSlowInEasing))
+            bigHeartScale.snapTo(0f)
+        }
+    }
+
     CyberpunkCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("post_card_${post.id}"),
         borderColor = if (post.isCasted) ElectricMagenta else if (post.isSighted) NeonCyan else CyberBorder
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -335,11 +428,10 @@ fun PostMasonryCardItem(
                 )
             }
 
-            // Custom Media Rendering (Image, Video, Audio)
+            // Custom Media Rendering (Image, Video, Audio) with double tap Cast support
             if (post.mediaUrl.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 val mediaHeight = remember(post.id) {
-                    // Staggered height variation
                     when (post.mediaType.lowercase()) {
                         "video" -> 160.dp
                         "audio", "music" -> 110.dp
@@ -354,6 +446,12 @@ fun PostMasonryCardItem(
                         .clip(RoundedCornerShape(8.dp))
                         .background(CyberBg)
                         .border(1.dp, CyberBorder, RoundedCornerShape(8.dp))
+                        .pointerInput(post.id) {
+                            detectTapGestures(
+                                onDoubleTap = { triggerDoubleTapMediaBurst() },
+                                onTap = { onToggleSighted() }
+                            )
+                        }
                 ) {
                     AsyncImage(
                         model = post.mediaUrl,
@@ -362,6 +460,7 @@ fun PostMasonryCardItem(
                         contentScale = ContentScale.Crop
                     )
 
+                    // Audio visualizer overlay
                     if (post.mediaType.equals("audio", ignoreCase = true) || post.mediaType.equals("music", ignoreCase = true)) {
                         Box(
                             modifier = Modifier
@@ -376,17 +475,17 @@ fun PostMasonryCardItem(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = Icons.Default.MusicNote,
+                                    imageVector = Icons.Default.GraphicEq,
                                     contentDescription = "Audio Track",
                                     tint = NeonCyan,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "AUDIO TRACK",
+                                    text = "AUDIO CAST • 320 KBPS",
                                     color = NeonCyan,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp
+                                    fontSize = 9.sp
                                 )
                             }
                         }
@@ -413,6 +512,24 @@ fun PostMasonryCardItem(
                             }
                         }
                     }
+
+                    // Double-tap central exploding heart
+                    if (bigHeartAlpha.value > 0.01f) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = "Liked",
+                                tint = ElectricMagenta,
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .scale(bigHeartScale.value)
+                                    .alpha(bigHeartAlpha.value)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -424,31 +541,36 @@ fun PostMasonryCardItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Casted (Like) Button with Bouncy Heart Scale
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clickable {
-                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                            onToggleCast()
-                        }
-                        .padding(vertical = 2.dp, horizontal = 2.dp)
-                ) {
-                    Icon(
-                        imageVector = if (post.isCasted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Cast",
-                        tint = if (post.isCasted) ElectricMagenta else TextMuted,
+                // Casted (Heart) Button with Custom Heart Particle Burst
+                Box(contentAlignment = Alignment.CenterStart) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .size(16.dp)
-                            .scale(castScale)
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                        text = "${post.castCount}",
-                        color = if (post.isCasted) ElectricMagenta else TextSecondary,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                            .clickable { triggerCastedHeartBurst() }
+                            .padding(vertical = 4.dp, horizontal = 2.dp)
+                            .testTag("btn_cast_${post.id}")
+                    ) {
+                        Icon(
+                            imageVector = if (post.isCasted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Cast",
+                            tint = if (post.isCasted) ElectricMagenta else TextMuted,
+                            modifier = Modifier
+                                .size(17.dp)
+                                .scale(castScale)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${post.castCount}",
+                            color = if (post.isCasted) ElectricMagenta else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Floating Particle Canvas overlay
+                    particles.forEach { particle ->
+                        FloatingHeartParticle(particle = particle)
+                    }
                 }
 
                 // Sighted (View) Button with Bouncy Eye Animation
@@ -459,17 +581,18 @@ fun PostMasonryCardItem(
                             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                             onToggleSighted()
                         }
-                        .padding(vertical = 2.dp, horizontal = 2.dp)
+                        .padding(vertical = 4.dp, horizontal = 2.dp)
+                        .testTag("btn_sighted_${post.id}")
                 ) {
                     Icon(
                         imageVector = if (post.isSighted) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = "Sighted",
                         tint = if (post.isSighted) NeonCyan else TextMuted,
                         modifier = Modifier
-                            .size(16.dp)
+                            .size(17.dp)
                             .scale(sightedScale)
                     )
-                    Spacer(modifier = Modifier.width(3.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "${post.sightedCount}",
                         color = if (post.isSighted) NeonCyan else TextSecondary,
@@ -482,16 +605,20 @@ fun PostMasonryCardItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clickable { onRevyralize() }
-                        .padding(vertical = 2.dp, horizontal = 2.dp)
+                        .clickable {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onRevyralize()
+                        }
+                        .padding(vertical = 4.dp, horizontal = 2.dp)
+                        .testTag("btn_revyral_${post.id}")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Repeat,
                         contentDescription = "Revyralize",
                         tint = NeonGreen,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(15.dp)
                     )
-                    Spacer(modifier = Modifier.width(2.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = "${post.revyralCount}",
                         color = NeonGreen,
@@ -500,6 +627,46 @@ fun PostMasonryCardItem(
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Animated floating cyberpunk heart particle for the Casted interaction
+ */
+@Composable
+private fun FloatingHeartParticle(particle: HeartParticle) {
+    val animProgress = remember { Animatable(0f) }
+
+    LaunchedEffect(particle.id) {
+        animProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
+        )
+    }
+
+    val progress = animProgress.value
+    if (progress < 1f) {
+        val currentX = particle.startOffsetX + (particle.targetOffsetX * progress)
+        val currentY = particle.targetOffsetY * progress
+        val alpha = (1f - progress).coerceIn(0f, 1f)
+        val scale = (0.5f + progress * 0.8f).coerceIn(0f, 1.3f)
+
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(currentX.toInt(), currentY.toInt()) }
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    alpha = alpha
+                )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Favorite,
+                contentDescription = null,
+                tint = particle.color,
+                modifier = Modifier.size(particle.sizeDp.dp)
+            )
         }
     }
 }

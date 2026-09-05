@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.example.vyra.utils.CacheManager
+import com.example.vyra.utils.CacheStats
 
 data class VoicePersonality(
     val id: String,
@@ -64,7 +66,17 @@ object VoicePersonalities {
     val all = listOf(Amina, Vyra, Kenji)
 }
 
-class SettingsViewModel(private val repository: VyraRepository) : ViewModel() {
+class SettingsViewModel(
+    private val repository: VyraRepository,
+    private val cacheManager: CacheManager? = null
+) : ViewModel() {
+
+    val cacheStats: StateFlow<CacheStats> = cacheManager?.cacheStats 
+        ?: MutableStateFlow(CacheStats(size = 0, hits = 0, misses = 0, evictions = 0)).asStateFlow()
+
+    fun clearCache() {
+        cacheManager?.clear()
+    }
 
     private val _selectedPersonality = MutableStateFlow<VoicePersonality>(VoicePersonalities.Vyra)
     val selectedPersonality: StateFlow<VoicePersonality> = _selectedPersonality.asStateFlow()

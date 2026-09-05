@@ -172,6 +172,8 @@ export interface DesignTokens {
     accent: string;
     background: string;
     surface: string;
+    'surface-variant'?: string;
+    border?: string;
     text: {
       primary: string;
       secondary: string;
@@ -206,3 +208,52 @@ export interface DesignTokens {
     xl: number;
   };
 }
+
+export interface DemoResponse {
+  message: string;
+  platform: string;
+  features: string[];
+}
+
+export interface TrueFoundryAiStatus {
+  gateway: string;
+  supportedModels: string[];
+  features: string[];
+}
+
+export interface PaystackInitializeRequest {
+  email: string;
+  amount: number;
+  currency?: "NGN" | "GHS" | "ZAR" | "KES" | "USD";
+  metadata?: Record<string, unknown>;
+  callbackUrl?: string;
+}
+
+export interface PaystackInitializeResponseData {
+  success: boolean;
+  data?: {
+    authorizationUrl: string;
+    accessCode: string;
+    reference: string;
+    amount: number;
+    currency: string;
+  };
+  message?: string;
+}
+
+export interface PaystackVerifyResponseData {
+  success: boolean;
+  transaction?: {
+    reference: string;
+    isSuccessful: boolean;
+    amount: number;
+    currency: string;
+    platformFee: number;
+    creatorPayout: number;
+    channel: string;
+    customerEmail: string;
+    paidAt: string;
+  };
+  message?: string;
+}
+

@@ -180,3 +180,24 @@ const data: MyRouteResponse = await response.json();
 - Production-ready with multiple deployment options
 - Comprehensive UI component library included
 - Type-safe API communication via shared interfaces
+
+## African Payment Systems & Paystack Integration
+
+- **Paystack Live Credentials**:
+  - `PAYSTACK_SECRET_KEY` (`sk_live_*`): Strictly server-side in Express backend (`/api/paystack/*`). Never bundle in client APK or frontend JS.
+  - `VITE_PAYSTACK_PUBLIC_KEY` (`pk_live_*`): Configured for client-side inline checkout and Android SDK initialization.
+- **Supported African Currencies**: NGN (₦), KES (KSh), ZAR (R), GHS (GH₵).
+- **Platform Fee**: Enforce 15% platform fee on all creator tips and purchases (85% net payout to creator balance).
+
+## High-Virality Broadcast Hub (VyraShowScreen)
+
+- **Dedicated Broadcast Layout**: Full-screen cyberpunk media canvas optimized for trending casts and audio visualizers.
+- **Action Buttons**: Prominent 52dp buttons for 'Revyralize' (repost with reach multiplier and pulsing Neon Green feedback) and 'Share' (native chooser + in-app social sheet).
+- **Virality Gauge HUD**: Real-time gauge displaying virality percentage (`98.7% VIRAL`) and virality velocity (`+3.8k vel/h`).
+
+## TrueFoundry AI Gateway Architecture
+
+- **Standard Base URL**: `https://gateway.truefoundry.ai/api/llm`
+- **Supported Models**: `anthropic/claude-haiku-4-5-20251001`, `xai/grok-build-latest`, `openai/gpt-4o-mini-tts-2025-12-15`
+- **Mandatory Headers**: `X-TFY-METADATA` and `X-TFY-LOGGING-CONFIG`.
+

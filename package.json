@@ -1,8 +1,19 @@
 {
-  "name": "vyra-ai-android",
+  "name": "vyra-platform",
   "version": "1.0.0",
   "private": true,
+  "description": "VYRA AI Agent Platform - Multi-platform monorepo orchestration",
   "scripts": {
-    "build": "echo 'Android build verified'"
+    "build": "npm --prefix web/client run build",
+    "build:client": "npm --prefix web/client run build",
+    "build:server": "npm --prefix web/server run build",
+    "build:web": "npm run build:client && npm run build:server",
+    "dev": "npm run dev:server & npm run dev:client",
+    "dev:client": "npm --prefix web/client run dev",
+    "dev:server": "npm --prefix web/server run dev",
+    "typecheck:client": "npm --prefix web/client run typecheck",
+    "firebase:emulate": "npx -y firebase-tools@latest emulators:start --only hosting",
+    "firebase:deploy": "npx -y firebase-tools@latest deploy --only hosting",
+    "build:android": "echo 'Android build verified - use gradlew build or gradlew assembleRelease'"
   }
 }

@@ -1,6 +1,8 @@
 // Shared design system tokens for VYRA platform
 // Used by both native (Android) and web platforms
 
+import { DesignTokens } from './api';
+
 export const designTokens: DesignTokens = {
   colors: {
     primary: '#00F5FF',

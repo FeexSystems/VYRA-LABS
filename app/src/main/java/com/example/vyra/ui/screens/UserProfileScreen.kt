@@ -22,12 +22,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GridOn
-import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MonetizationOn
-import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
@@ -35,6 +34,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -56,7 +58,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.vyra.data.models.PlatformLink
+import androidx.compose.ui.window.Dialog
+import com.example.vyra.data.models.ExternalPlatform
 import com.example.vyra.data.models.UserRole
 import com.example.vyra.theme.CyberBg
 import com.example.vyra.theme.CyberBorder
@@ -89,7 +92,8 @@ fun UserProfileScreen(
     val fan = userProfile.fanDetails
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    var showEditPlatformDialog by remember { mutableStateOf<PlatformLink?>(null) }
+    var selectedPlatformToEdit by remember { mutableStateOf<ExternalPlatform?>(null) }
+    var showAddPlatformDialog by remember { mutableStateOf(false) }
 
     val tabs = listOf("MEDIA GRID", "REVENUE", "SETTINGS")
 
@@ -316,7 +320,7 @@ fun UserProfileScreen(
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Social Media Handles Dynamic List
+                        // Social Media Handles Dynamic List Header
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -329,15 +333,31 @@ fun UserProfileScreen(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
                             )
-                            Text(
-                                text = "+ TAP HANDLE TO EDIT",
-                                color = NeonCyan,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .clickable { showAddPlatformDialog = true }
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add Handle",
+                                    tint = NeonCyan,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "ADD HANDLE",
+                                    color = NeonCyan,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
 
+                        // Dynamic Chips for Handles
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -357,7 +377,7 @@ fun UserProfileScreen(
                                             if (isConnected) chipAccent else CyberBorder,
                                             RoundedCornerShape(20.dp)
                                         )
-                                        .clickable { showEditPlatformDialog = platform }
+                                        .clickable { selectedPlatformToEdit = platform }
                                         .padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
                                     Row(
@@ -500,6 +520,186 @@ fun UserProfileScreen(
             }
         }
     }
+
+    // Edit Existing Social Handle Dialog
+    if (selectedPlatformToEdit != null) {
+        val platform = selectedPlatformToEdit!!
+        var handleText by remember { mutableStateOf(platform.handle) }
+
+        Dialog(onDismissRequest = { selectedPlatformToEdit = null }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(containerColor = CyberSurface),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, NeonCyan),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Text(
+                        text = "EDIT ${platform.name.uppercase()} HANDLE",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    OutlinedTextField(
+                        value = handleText,
+                        onValueChange = { handleText = it },
+                        label = { Text("Handle (e.g. @username)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = NeonCyan,
+                            unfocusedBorderColor = CyberBorder,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(
+                            onClick = {
+                                viewModel.removeSocialHandle(platform.id)
+                                selectedPlatformToEdit = null
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = ElectricMagenta.copy(alpha = 0.2f)),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, ElectricMagenta),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = ElectricMagenta,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("REMOVE", color = ElectricMagenta, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = {
+                                viewModel.updateSocialHandle(platform.id, handleText)
+                                selectedPlatformToEdit = null
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = NeonCyan, contentColor = Color.Black),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("SAVE", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Add New Social Handle Dialog
+    if (showAddPlatformDialog) {
+        var platformName by remember { mutableStateOf("") }
+        var handleText by remember { mutableStateOf("") }
+
+        Dialog(onDismissRequest = { showAddPlatformDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(containerColor = CyberSurface),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, NeonGreen),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Text(
+                        text = "ADD SOCIAL PLATFORM HANDLE",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    OutlinedTextField(
+                        value = platformName,
+                        onValueChange = { platformName = it },
+                        label = { Text("Platform (e.g. TikTok, Spotify, X)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = NeonGreen,
+                            unfocusedBorderColor = CyberBorder,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    OutlinedTextField(
+                        value = handleText,
+                        onValueChange = { handleText = it },
+                        label = { Text("Handle (e.g. @your_handle)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = NeonGreen,
+                            unfocusedBorderColor = CyberBorder,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Button(
+                            onClick = { showAddPlatformDialog = false },
+                            colors = ButtonDefaults.buttonColors(containerColor = CyberBg),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("CANCEL", color = TextMuted, fontSize = 11.sp)
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = {
+                                if (platformName.isNotBlank() && handleText.isNotBlank()) {
+                                    viewModel.addSocialHandle(platformName.trim(), handleText.trim())
+                                }
+                                showAddPlatformDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = NeonGreen, contentColor = Color.Black),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("ADD HANDLE", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ProfileStatItem(label: String, value: String, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            color = color,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Black
+        )
+        Text(
+            text = label,
+            color = TextMuted,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
 }
 
 @Composable
@@ -605,6 +805,3 @@ fun ProfileMediaGridSection() {
         }
     }
 }
-
-
-

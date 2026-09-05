@@ -60,6 +60,7 @@ import com.example.vyra.theme.TextSecondary
 import com.example.vyra.ui.components.CyberpunkCard
 import com.example.vyra.ui.viewmodels.ContentOptimizerViewModel
 import com.example.vyra.ui.viewmodels.FanDnaViewModel
+import com.example.vyra.webview.ReactComponentWrapper
 
 @Composable
 fun FanDnaScreen(
@@ -79,6 +80,7 @@ fun FanDnaScreen(
     var newTier by remember { mutableStateOf("VIP") }
     var newPlatform by remember { mutableStateOf("X") }
     var newSpend by remember { mutableStateOf("250") }
+    var useReactCards by remember { mutableStateOf(false) }
 
     val filteredFans = fans.filter { fan ->
         (filter == "All" || fan.tier == filter) &&
@@ -200,43 +202,103 @@ fun FanDnaScreen(
             )
         }
 
-        // Filter Chips
+        // Filter Chips & Hybrid Switcher
         item {
             val tiers = listOf("All", "VIP", "Premium", "Standard")
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(tiers) { t ->
-                    val isSelected = filter == t
-                    Box(
-                        modifier = Modifier
-                            .testTag("fan_filter_$t")
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) ElectricMagenta else CyberSurface)
-                            .border(1.dp, if (isSelected) ElectricMagenta else CyberBorder, RoundedCornerShape(20.dp))
-                            .clickable { viewModel.setFilter(t) }
-                            .padding(horizontal = 16.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = t,
-                            color = if (isSelected) Color.White else TextMuted,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            fontSize = 12.sp
-                        )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(tiers) { t ->
+                        val isSelected = filter == t
+                        Box(
+                            modifier = Modifier
+                                .testTag("fan_filter_$t")
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (isSelected) ElectricMagenta else CyberSurface)
+                                .border(1.dp, if (isSelected) ElectricMagenta else CyberBorder, RoundedCornerShape(20.dp))
+                                .clickable { viewModel.setFilter(t) }
+                                .padding(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = t,
+                                color = if (isSelected) Color.White else TextMuted,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .testTag("toggle_react_hybrid")
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(if (useReactCards) NeonCyan.copy(alpha = 0.25f) else CyberSurface)
+                        .border(1.dp, if (useReactCards) NeonCyan else CyberBorder, RoundedCornerShape(20.dp))
+                        .clickable { useReactCards = !useReactCards }
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = if (useReactCards) "⚡ REACT HYBRID" else "NATIVE UI",
+                        color = if (useReactCards) NeonCyan else TextMuted,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp
+                    )
                 }
             }
         }
 
         items(filteredFans) { fan ->
-            CyberpunkCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("fan_card_${fan.id}"),
-                borderColor = when (fan.tier) {
-                    "VIP" -> ElectricMagenta
-                    "Premium" -> NeonCyan
-                    else -> CyberBorder
+            if (useReactCards) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(175.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(1.dp, if (fan.tier == "VIP") ElectricMagenta else CyberBorder, RoundedCornerShape(12.dp))
+                ) {
+                    ReactComponentWrapper(
+                        componentName = "FanProfileCard",
+                        props = mapOf(
+                            "id" to fan.id,
+                            "name" to fan.name,
+                            "username" to fan.username,
+                            "tier" to fan.tier,
+                            "platform" to fan.platform,
+                            "totalSpend" to fan.totalSpend.toString()
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                        onEvent = { eventName, _ ->
+                            if (eventName == "upgrade_tier") {
+                                val nextTier = when (fan.tier) {
+                                    "Standard" -> "Premium"
+                                    "Premium" -> "VIP"
+                                    else -> "Standard"
+                                }
+                                viewModel.updateTier(fan.id, nextTier)
+                            }
+                        }
+                    )
                 }
-            ) {
+            } else {
+                CyberpunkCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("fan_card_${fan.id}"),
+                    borderColor = when (fan.tier) {
+                        "VIP" -> ElectricMagenta
+                        "Premium" -> NeonCyan
+                        else -> CyberBorder
+                    }
+                ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -335,6 +397,7 @@ fun FanDnaScreen(
             }
         }
     }
+}
 }
 }
 

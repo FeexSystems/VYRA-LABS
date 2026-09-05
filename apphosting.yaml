@@ -1,0 +1,18 @@
+# Firebase App Hosting Configuration Blueprint
+# Used when deploying full-stack SSR frameworks (Next.js, Angular) or containerized backends
+# Note: Firebase App Hosting requires the Firebase Blaze (pay-as-you-go) billing plan.
+
+runConfig:
+  minInstances: 0
+  maxInstances: 5
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+
+env:
+  - variable: NODE_ENV
+    value: production
+  - variable: CYBERPUNK_THEME_ENABLED
+    value: "true"
+  - variable: API_VERSION
+    value: "v1"

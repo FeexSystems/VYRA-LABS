@@ -26,7 +26,41 @@ class CacheManager(context: Context) {
     val cacheStats = _cacheStats.asStateFlow()
     
     /**
-     * Get value from cache
+     * Get raw String value from cache
+     */
+    fun get(key: String): String? {
+        val entry = memoryCache[key]
+        if (entry != null && !entry.isExpired()) {
+            cacheAccessOrder.remove(key)
+            cacheAccessOrder.add(key)
+            _cacheStats.value = _cacheStats.value.copy(hits = _cacheStats.value.hits + 1)
+            return entry.data
+        }
+        _cacheStats.value = _cacheStats.value.copy(misses = _cacheStats.value.misses + 1)
+        return null
+    }
+
+    /**
+     * Put raw String value in cache
+     */
+    fun put(key: String, value: String, ttl: Long = TimeUnit.MINUTES.toMillis(5)) {
+        val entry = CacheEntry(
+            data = value,
+            timestamp = System.currentTimeMillis(),
+            ttl = ttl
+        )
+        if (memoryCache.size >= maxMemoryCacheSize) {
+            val oldestKey = cacheAccessOrder.removeFirst()
+            memoryCache.remove(oldestKey)
+            _cacheStats.value = _cacheStats.value.copy(evictions = _cacheStats.value.evictions + 1)
+        }
+        memoryCache[key] = entry
+        cacheAccessOrder.add(key)
+        _cacheStats.value = _cacheStats.value.copy(size = memoryCache.size)
+    }
+
+    /**
+     * Get value from cache with class deserializer
      */
     fun <T> get(key: String, clazz: Class<T>): T? {
         val entry = memoryCache[key]

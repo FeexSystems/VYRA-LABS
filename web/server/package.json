@@ -3,18 +3,21 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch index.ts",
-    "start": "node dist/index.js",
-    "build": "tsc"
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.js",
+    "dev": "npm run build && node dist/index.js",
+    "start": "node dist/index.js"
   },
   "dependencies": {
-    "express": "^4.21.1",
+    "@google/genai": "^2.21.0",
     "cors": "^2.8.5",
+    "express": "^4.21.1",
     "helmet": "^8.0.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
     "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^26.4.1",
+    "esbuild": "^0.24.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }

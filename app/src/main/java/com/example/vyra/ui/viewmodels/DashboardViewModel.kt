@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+import com.example.vyra.utils.CacheManager
+import com.example.vyra.webview.StateSyncManager
+
 data class DashboardMetrics(
     val monthlyRevenue: Double = 12480.00,
     val revenueGrowthPercent: Double = 24.5,
@@ -28,7 +31,11 @@ data class RecentActivity(
     val detail: String
 )
 
-class DashboardViewModel(private val repository: VyraRepository) : ViewModel() {
+class DashboardViewModel(
+    private val repository: VyraRepository,
+    private val stateSyncManager: StateSyncManager? = null,
+    private val cacheManager: CacheManager? = null
+) : ViewModel() {
 
     private val _metrics = MutableStateFlow(DashboardMetrics())
     val metrics: StateFlow<DashboardMetrics> = _metrics.asStateFlow()
@@ -36,18 +43,32 @@ class DashboardViewModel(private val repository: VyraRepository) : ViewModel() {
     private val _recentActivities = MutableStateFlow<List<RecentActivity>>(emptyList())
     val recentActivities: StateFlow<List<RecentActivity>> = _recentActivities.asStateFlow()
 
+    private val _chartData = MutableStateFlow<List<Pair<String, Double>>>(
+        listOf(
+            "Mon" to 1420.0,
+            "Tue" to 1680.0,
+            "Wed" to 1540.0,
+            "Thu" to 1920.0,
+            "Fri" to 2150.0,
+            "Sat" to 2480.0,
+            "Sun" to 2950.0
+        )
+    )
+    val chartData: StateFlow<List<Pair<String, Double>>> = _chartData.asStateFlow()
+
     init {
         viewModelScope.launch {
             repository.seedInitialDataIfNeeded()
             observeCachedMetrics()
             loadActivities()
+            syncCurrentState()
         }
     }
 
     private fun observeCachedMetrics() {
         viewModelScope.launch {
             repository.cachedAnalytics.collectLatest { cached ->
-                _metrics.value = DashboardMetrics(
+                val newMetrics = DashboardMetrics(
                     monthlyRevenue = cached.monthlyRevenue,
                     revenueGrowthPercent = cached.revenueGrowthPercent,
                     totalFans = cached.totalFans,
@@ -56,8 +77,24 @@ class DashboardViewModel(private val repository: VyraRepository) : ViewModel() {
                     viralityScore = cached.viralityScore,
                     activeVoiceSessions = 42
                 )
+                _metrics.value = newMetrics
+                syncCurrentState()
             }
         }
+    }
+
+    private fun syncCurrentState() {
+        val current = _metrics.value
+        stateSyncManager?.updateNativeState(
+            "dashboard_metrics",
+            mapOf(
+                "monthlyRevenue" to current.monthlyRevenue,
+                "totalFans" to current.totalFans,
+                "viralityScore" to current.viralityScore,
+                "growth" to current.revenueGrowthPercent
+            )
+        )
+        cacheManager?.put("last_dashboard_metrics", current.monthlyRevenue.toString())
     }
 
     fun updateMetricsLocally(newRevenue: Double, newFans: Int, newVirality: Double) {

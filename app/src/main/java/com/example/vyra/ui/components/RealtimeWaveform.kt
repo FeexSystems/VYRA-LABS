@@ -59,7 +59,8 @@ fun RealtimeWaveform(
     isActive: Boolean,
     modifier: Modifier = Modifier,
     inputVolume: Float = 0.75f,
-    outputVolume: Float = 0.88f
+    outputVolume: Float = 0.88f,
+    sentiment: String = "Engaging"
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "waveform_anim")
 
@@ -131,16 +132,33 @@ fun RealtimeWaveform(
 
                 if (isActive) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.GraphicEq,
-                            contentDescription = "Waveform active",
-                            tint = NeonCyan,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    when (sentiment.lowercase()) {
+                                        "positive", "high virality" -> NeonGreen.copy(alpha = 0.2f)
+                                        "urgent", "critical" -> ElectricMagenta.copy(alpha = 0.2f)
+                                        else -> NeonCyan.copy(alpha = 0.2f)
+                                    }
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "AI SENTIMENT: ${sentiment.uppercase()}",
+                                color = when (sentiment.lowercase()) {
+                                    "positive", "high virality" -> NeonGreen
+                                    "urgent", "critical" -> ElectricMagenta
+                                    else -> NeonCyan
+                                },
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "48kHz / 192kbps",
-                            color = NeonCyan,
+                            color = TextMuted,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Medium
                         )

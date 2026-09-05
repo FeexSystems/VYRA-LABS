@@ -40,7 +40,8 @@ import com.example.vyra.theme.QuantumViolet
 @Composable
 fun VoiceOrb(
     isActive: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    sentiment: String = "Engaging"
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "orb_pulse")
     val scaleAnim by infiniteTransition.animateFloat(
@@ -118,8 +119,8 @@ fun VoiceOrb(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Real-time audio input/output waveform animation
-            RealtimeWaveform(isActive = isActive)
+            // Real-time audio input/output waveform animation with AI sentiment tinting
+            RealtimeWaveform(isActive = isActive, sentiment = sentiment)
         }
     }
 }

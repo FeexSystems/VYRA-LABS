@@ -70,6 +70,8 @@ import com.example.vyra.theme.TextSecondary
 import com.example.vyra.theme.parseHexColor
 import com.example.vyra.ui.components.AfricanPaymentGatewaySheet
 import com.example.vyra.ui.components.CyberpunkCard
+import com.example.vyra.ui.hybrid.ChartType
+import com.example.vyra.ui.hybrid.ChartWebView
 import com.example.vyra.ui.viewmodels.MonetizationViewModel
 import com.example.vyra.ui.viewmodels.ProfileViewModel
 
@@ -83,6 +85,9 @@ fun MonetizationScreen(
     val vipPrice by viewModel.vipPrice.collectAsState()
     val premiumPrice by viewModel.premiumPrice.collectAsState()
     val tiers by viewModel.tiers.collectAsState()
+    val tierChartData by viewModel.tierChartData.collectAsState()
+    val monthlyTrajectoryChartData by viewModel.monthlyTrajectoryChartData.collectAsState()
+    var selectedChartType by remember { mutableStateOf(ChartType.Doughnut) }
 
     val userProfile by profileViewModel.userProfile.collectAsState()
     val selectedCurrency by profileViewModel.selectedCurrency.collectAsState()
@@ -260,6 +265,176 @@ fun MonetizationScreen(
                                 modifier = Modifier.size(28.dp)
                             )
                         }
+                    }
+                }
+            }
+        }
+
+        // HYBRID MONETIZATION ANALYTICS & SLIDER CONTROLS
+        item {
+            CyberpunkCard(
+                modifier = Modifier.fillMaxWidth(),
+                borderColor = ElectricMagenta,
+                accentGlow = ElectricMagenta.copy(alpha = 0.2f)
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.MonetizationOn,
+                                contentDescription = null,
+                                tint = ElectricMagenta,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "DYNAMIC REVENUE MODELER",
+                                color = ElectricMagenta,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.8.sp
+                            )
+                        }
+
+                        // Chart Type Switcher Pills
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (selectedChartType == ChartType.Doughnut) ElectricMagenta else CyberSurface)
+                                    .border(1.dp, if (selectedChartType == ChartType.Doughnut) NeonCyan else CyberBorder, RoundedCornerShape(6.dp))
+                                    .clickable { selectedChartType = ChartType.Doughnut }
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "TIERS",
+                                    color = if (selectedChartType == ChartType.Doughnut) Color.Black else TextMuted,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (selectedChartType == ChartType.Bar) ElectricMagenta else CyberSurface)
+                                    .border(1.dp, if (selectedChartType == ChartType.Bar) NeonCyan else CyberBorder, RoundedCornerShape(6.dp))
+                                    .clickable { selectedChartType = ChartType.Bar }
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "6-MO FORECAST",
+                                    color = if (selectedChartType == ChartType.Bar) Color.Black else TextMuted,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // WebView Chart
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(1.dp, CyberBorder, RoundedCornerShape(8.dp))
+                    ) {
+                        val activeData = if (selectedChartType == ChartType.Doughnut) tierChartData else monthlyTrajectoryChartData
+                        ChartWebView(
+                            data = activeData,
+                            chartType = selectedChartType,
+                            modifier = Modifier.fillMaxSize(),
+                            accentColor = if (selectedChartType == ChartType.Doughnut) "#FF007A" else "#00FF87"
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Interactive Sliders for Pricing Tuning
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "VIP Elite Tier Monthly Price:",
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "$${String.format("%.2f", vipPrice)}/mo",
+                                color = ElectricMagenta,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Slider(
+                            value = vipPrice,
+                            onValueChange = { viewModel.updateVipPrice(it) },
+                            valueRange = 9.99f..99.99f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = ElectricMagenta,
+                                activeTrackColor = ElectricMagenta,
+                                inactiveTrackColor = CyberBorder
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Premium Supporter Monthly Price:",
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "$${String.format("%.2f", premiumPrice)}/mo",
+                                color = NeonCyan,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Slider(
+                            value = premiumPrice,
+                            onValueChange = { viewModel.updatePremiumPrice(it) },
+                            valueRange = 2.99f..39.99f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = NeonCyan,
+                                activeTrackColor = NeonCyan,
+                                inactiveTrackColor = CyberBorder
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "• SUPABASE STATE SYNC: REALTIME",
+                            color = NeonCyan,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Dual-layer Caching Active",
+                            color = TextMuted,
+                            fontSize = 10.sp
+                        )
                     }
                 }
             }

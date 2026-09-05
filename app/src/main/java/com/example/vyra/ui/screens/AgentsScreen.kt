@@ -63,6 +63,8 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
     val messages by viewModel.messages.collectAsState()
     val isVoiceActive by viewModel.isVoiceActive.collectAsState()
     val voiceHistory by viewModel.voiceInteractions.collectAsState()
+    val currentProviderName by viewModel.currentProviderName.collectAsState()
+    val isGenerating by viewModel.isGenerating.collectAsState()
 
     var inputText by remember { mutableStateOf("") }
     var showVoiceHistory by remember { mutableStateOf(false) }
@@ -192,7 +194,40 @@ fun AgentsScreen(viewModel: AgentChatViewModel) {
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
+
+        // AI Core Provider & Cache Status Row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(if (isGenerating) NeonGreen else NeonCyan)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (isGenerating) "GENERATING STREAM..." else "AI CORE: $currentProviderName",
+                    color = if (isGenerating) NeonGreen else TextSecondary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Text(
+                text = "⚡ DUAL-LAYER CACHE ACTIVE",
+                color = NeonCyan.copy(alpha = 0.85f),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
 
         if (selectedAgent.id == "holokai" || isVoiceActive) {
             VoiceOrb(
