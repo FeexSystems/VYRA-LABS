@@ -27,6 +27,7 @@ import {
   handleRegisterBiometrics,
   handleBiometricCharge,
 } from './routes/paystack-biometrics.js';
+import { handleElevenLabsSignedUrl } from './routes/elevenlabs';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -56,6 +57,9 @@ app.post('/api/paystack/biometric-charge', handleBiometricCharge);
 app.get('/api/ai/agent/list', handleListAgents);
 app.post('/api/ai/agent/interact', handleAgentInteract);
 app.get('/api/ai/agent/stream', handleAgentStream);
+
+// ElevenLabs secure conversational token handshake route
+app.get('/api/ai/elevenlabs/signed-url', handleElevenLabsSignedUrl);
 
 // Health check
 app.get('/health', (req, res) => {
