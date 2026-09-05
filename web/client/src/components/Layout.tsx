@@ -14,7 +14,8 @@ import {
   Zap,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Terminal
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -29,6 +30,14 @@ export const NAV_ITEMS = [
     icon: Radio,
     badge: 'LIVE 98%',
     badgeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+  },
+  {
+    path: '/console',
+    label: 'System Console',
+    sublabel: 'Mobile Engine & DB',
+    icon: Terminal,
+    badge: 'V2.4 ALPHA',
+    badgeColor: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
   },
   {
     path: '/dashboard',

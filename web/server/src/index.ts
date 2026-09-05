@@ -23,6 +23,10 @@ import {
   handleAgentInteract,
   handleAgentStream,
 } from './routes/ai-agents';
+import {
+  handleRegisterBiometrics,
+  handleBiometricCharge,
+} from './routes/paystack-biometrics.js';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -45,6 +49,8 @@ app.get('/api/paystack/public-key', handleGetPaystackPublicKey);
 app.post('/api/paystack/initialize', handleInitializePaystack);
 app.get('/api/paystack/verify/:reference', handleVerifyPaystack);
 app.post('/api/paystack/webhook', handlePaystackWebhook);
+app.post('/api/paystack/register-biometrics', handleRegisterBiometrics);
+app.post('/api/paystack/biometric-charge', handleBiometricCharge);
 
 // Gemini Interactions API Live Agents Routes
 app.get('/api/ai/agent/list', handleListAgents);

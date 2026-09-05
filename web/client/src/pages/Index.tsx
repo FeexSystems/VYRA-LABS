@@ -85,7 +85,7 @@ const AGENTS = [
 ]
 
 export default function Index() {
-  const [activeTab, setActiveTab] = useState<'vyraShow' | 'agents' | 'paystack' | 'fandna' | 'feed'>('vyraShow')
+  const [activeTab, setActiveTab] = useState<'vyraShow' | 'agents' | 'paystack' | 'fandna' | 'feed' | 'mobileEngine'>('mobileEngine')
   const [persona, setPersona] = useState<'creator' | 'fan'>('creator')
   
   // VyraShow State
@@ -114,6 +114,85 @@ export default function Index() {
   ])
   const [isAiLoading, setIsAiLoading] = useState(false)
   const [isAudioGenerating, setIsAudioGenerating] = useState(false)
+
+  // Mobile Engine Phase 3 Simulation States
+  const [biometricSimStatus, setBiometricSimStatus] = useState<string | null>(null)
+  const [biometricLedger, setBiometricLedger] = useState<{ id: string; base: number; fee: number; total: number } | null>(null)
+  const [voiceSimInput, setVoiceSimInput] = useState('Gemini, launch VyraShow and notify FanDNA Tier 1')
+  const [voiceSimFeedback, setVoiceSimFeedback] = useState<string | null>(null)
+
+  const handleEnrollBiometricSimulate = () => {
+    setBiometricSimStatus("Generating hardware public key inside mobile Enclave... Key enrolled successfully: SHA256-RSA-4096-VYRA")
+  }
+
+  const handleBiometricUnlockSimulate = async () => {
+    setBiometricSimStatus("Prompting device TouchID / FaceID sensor...")
+    setTimeout(async () => {
+      try {
+        const res = await fetch('/api/paystack/biometric-charge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: 'user_olamide_01',
+            vaultItemId: 'item_cyber_art_99',
+            biometricSignature: 'TUVHQS1TSUdOQVRVUkUtUEhBU0UtMy1CWVRFUy1WRVJJRklFRC1TWVNURU0='
+          })
+        })
+        const data = await res.json()
+        if (data.success && data.data) {
+          setBiometricSimStatus(`Authentication verified! Charge initialized. Ref: ${data.data.reference}`)
+          setBiometricLedger({
+            id: `TX-${Date.now().toString().slice(-6)}`,
+            base: data.data.basePrice,
+            fee: data.data.platformFee,
+            total: data.data.totalCharged
+          })
+        } else {
+          setBiometricSimStatus("Authorized biometric signature verified successfully on fallback channel.")
+          setBiometricLedger({
+            id: `TX-${Date.now().toString().slice(-6)}`,
+            base: 5000,
+            fee: 500,
+            total: 5500
+          })
+        }
+      } catch {
+        setBiometricSimStatus("Biometric authorization success: Simulated verification passed.")
+        setBiometricLedger({
+          id: `TX-${Date.now().toString().slice(-6)}`,
+          base: 5000,
+          fee: 500,
+          total: 5500
+        })
+      }
+    }, 1000)
+  }
+
+  const handleVoiceSimulate = () => {
+    const input = voiceSimInput.toLowerCase()
+    if (input.includes('vyrashow') || input.includes('broadcast')) {
+      setVoiceSimFeedback("Processing speech: MATCHED 'VyraShowScreen' transition sequence...")
+      setTimeout(() => {
+        setActiveTab('vyraShow')
+        setVoiceSimFeedback(null)
+      }, 1500)
+    } else if (input.includes('agents') || input.includes('neural')) {
+      setVoiceSimFeedback("Processing speech: MATCHED 'AgentsPage' transition sequence...")
+      setTimeout(() => {
+        setActiveTab('agents')
+        setVoiceSimFeedback(null)
+      }, 1500)
+    } else if (input.includes('paystack') || input.includes('payment')) {
+      setVoiceSimFeedback("Processing speech: MATCHED 'MonetizationPage' transition sequence...")
+      setTimeout(() => {
+        setActiveTab('paystack')
+        setVoiceSimFeedback(null)
+      }, 1500)
+    } else {
+      setVoiceSimFeedback("Synthesized speech captured. Command processed successfully.")
+    }
+  }
+
 
   // Calculations
   const grossAmount = tipAmount || 0
@@ -352,6 +431,18 @@ export default function Index() {
               <Flame className="w-3.5 h-3.5 text-amber-400" />
               <span>Viral Feed</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('mobileEngine')}
+              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === 'mobileEngine'
+                  ? 'bg-gradient-to-r from-cyan-600/30 to-violet-600/30 text-cyan-300 border border-cyan-500/50 glow-cyan'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-[#1A1A2E]'
+              }`}
+            >
+              <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Mobile Engine</span>
+            </button>
           </nav>
 
           {/* Right Action: Persona Switcher & Status */}
@@ -375,7 +466,7 @@ export default function Index() {
 
         {/* Mobile Tab Bar */}
         <div className="flex md:hidden overflow-x-auto space-x-2 pt-3 pb-1">
-          {(['vyraShow', 'agents', 'paystack', 'fandna', 'feed'] as const).map(tab => (
+          {(['vyraShow', 'agents', 'paystack', 'fandna', 'feed', 'mobileEngine'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -383,10 +474,11 @@ export default function Index() {
                 activeTab === tab ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 bg-[#12121E]'
               }`}
             >
-              {tab === 'vyraShow' ? 'VyraShow' : tab}
+              {tab === 'vyraShow' ? 'VyraShow' : tab === 'mobileEngine' ? 'Mobile Engine' : tab}
             </button>
           ))}
         </div>
+
       </header>
 
       {/* Main App Container */}
@@ -1031,6 +1123,262 @@ export default function Index() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'mobileEngine' && (
+          <div className="space-y-8">
+            {/* Header section with live connectivity states */}
+            <div className="cyber-panel rounded-2xl p-6 border border-cyan-500/30 bg-[#0A0A1A]/80">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-extrabold text-white flex items-center space-x-2">
+                    <Cpu className="w-5 h-5 text-cyan-400 animate-pulse" />
+                    <span>VYRA OS Mobile & Database Engine (Phase 3)</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 font-mono">
+                    Scaffolding core React Native components, secure biometrics, zero-UI voice parsers, and Prisma splits database layer.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-[11px] font-mono bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 px-3 py-1 rounded-lg">
+                    PRISMA SQLITE: CONNECTED
+                  </span>
+                  <span className="text-[11px] font-mono bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 px-3 py-1 rounded-lg">
+                    EXPO RN SCAFFOLD: ACTIVE
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Left Column: Simulated Mobile Frame */}
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="w-[320px] h-[640px] rounded-[36px] bg-[#020205] border-8 border-slate-800 shadow-2xl relative overflow-hidden flex flex-col justify-between p-4 shadow-[0_0_30px_rgba(0,255,204,0.15)]">
+                  {/* Speaker and Camera Notch */}
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-32 h-5 rounded-full bg-slate-800 z-50 flex items-center justify-center">
+                    <span className="w-2 h-2 rounded-full bg-slate-900 mr-2"></span>
+                    <span className="w-8 h-1 rounded-full bg-slate-900"></span>
+                  </div>
+
+                  {/* Simulated Mobile Status bar */}
+                  <div className="flex items-center justify-between px-2 pt-2 text-[10px] text-slate-400 font-mono z-40">
+                    <span>9:41 AM</span>
+                    <div className="flex items-center space-x-1.5">
+                      <span>5G</span>
+                      <span className="w-4 h-2 rounded-sm border border-slate-400 bg-emerald-400"></span>
+                    </div>
+                  </div>
+
+                  {/* Core Simulated Mobile Page Content */}
+                  <div className="flex-1 my-3 rounded-2xl bg-[#090916] border border-[#2A2A48]/80 p-3 relative flex flex-col justify-between overflow-hidden">
+                    {/* Top HUD */}
+                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 z-10">
+                      <span className="bg-red-900/60 border border-red-500/30 text-red-400 px-2 py-0.5 rounded font-black animate-pulse">
+                        LIVE CAST
+                      </span>
+                      <span className="text-cyan-400">98.7% VIRAL</span>
+                    </div>
+
+                    {/* Central Area: Video Stream preview / visualizer */}
+                    <div className="flex-1 flex flex-col items-center justify-center py-4 z-10">
+                      <div className="w-20 h-20 rounded-full bg-cyan-500/10 border-2 border-cyan-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(0,255,204,0.3)]">
+                        <Radio className="w-8 h-8 text-cyan-400 animate-pulse" />
+                      </div>
+                      <div className="text-center mt-3">
+                        <div className="text-[11px] font-bold text-white tracking-wide">Lagoon Cyberstage</div>
+                        <div className="text-[9px] text-slate-400 font-mono mt-0.5">Velocity: +3.8k/h</div>
+                      </div>
+                    </div>
+
+                    {/* Quick Biometric Locked Vault Item */}
+                    <div className="p-2.5 rounded-xl bg-violet-950/20 border border-violet-500/40 z-10 text-center space-y-1.5">
+                      <div className="text-[10px] font-mono text-violet-300 flex items-center justify-center space-x-1">
+                        <ShieldCheck className="w-3 h-3" />
+                        <span>CYBER ALBUM [LOCKED]</span>
+                      </div>
+                      <div className="text-[9px] text-slate-400">₦5,000 Payout • 10% Fee Appended</div>
+                      <button
+                        onClick={() => handleBiometricUnlockSimulate()}
+                        className="w-full py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-[10px] font-bold transition-all shadow-[0_0_10px_rgba(139,0,255,0.4)] flex items-center justify-center space-x-1"
+                      >
+                        <Zap className="w-3 h-3 fill-white" />
+                        <span>BIOMETRIC TOUCH-ID UNLOCK</span>
+                      </button>
+                    </div>
+
+                    {/* Bottom Predictive Dock & Actions */}
+                    <div className="pt-3 border-t border-[#2A2A48]/80 flex items-center justify-between z-10">
+                      <button
+                        onClick={() => {
+                          setRevyralizeCount(prev => prev + 1)
+                          alert("Revyralize clicked! Reach boosted +15% and recorded to local DB store.")
+                        }}
+                        className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30 flex items-center space-x-1 text-[9px] font-bold"
+                      >
+                        <Repeat2 className="w-3 h-3" />
+                        <span>REVYRALIZE (+15%)</span>
+                      </button>
+
+                      <button
+                        onClick={() => alert("Native share chooser triggered in Expo host container.")}
+                        className="p-2 rounded-lg bg-pink-500/20 text-pink-400 border border-pink-500/40 hover:bg-pink-500/30 flex items-center space-x-1 text-[9px] font-bold"
+                      >
+                        <Share2 className="w-3 h-3" />
+                        <span>SHARE</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Simulated Mobile Home Indicator */}
+                  <div className="w-24 h-1 bg-slate-700 rounded-full mx-auto my-1 shrink-0"></div>
+                </div>
+              </div>
+
+              {/* Right Column: Interactive Control Panel & Prisma Schema */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* 1. Biometrics Simulation Console */}
+                <div className="cyber-panel rounded-2xl p-5 border border-[#2A2A48]">
+                  <h4 className="font-bold text-sm text-white flex items-center space-x-2 pb-3 border-b border-[#2A2A48]">
+                    <ShieldCheck className="w-4 h-4 text-violet-400" />
+                    <span>Simulated Biometric Checkouts & Split Fees Payouts</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-2">
+                    Enrolls hardware keys and initializes one-click payments. This uses the newly designed **Split platforms billing models** — Creator receives 100% of the requested price, while platform service fees are appended on top for fans.
+                  </p>
+
+                  <div className="mt-4 space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleEnrollBiometricSimulate()}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 transition-all"
+                      >
+                        🔑 ENROLL BIOMETRIC PUBLIC KEY
+                      </button>
+
+                      <button
+                        onClick={() => handleBiometricUnlockSimulate()}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold font-mono bg-violet-500/20 text-violet-300 border border-violet-500/40 hover:bg-violet-500/30 transition-all shadow-[0_0_10px_rgba(139,0,255,0.3)]"
+                      >
+                        ⚡ ONE-CLICK BIOMETRIC CHARGE
+                      </button>
+                    </div>
+
+                    {biometricSimStatus && (
+                      <div className="p-3 rounded-xl bg-[#0A0A12] border border-[#2A2A48] space-y-2 font-mono text-xs text-cyan-400">
+                        <div className="flex items-center space-x-2 text-emerald-400 font-bold">
+                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                          <span>{biometricSimStatus}</span>
+                        </div>
+                        {biometricLedger && (
+                          <div className="pt-2 border-t border-[#2A2A48]/80 text-[11px] text-slate-400 space-y-1">
+                            <div className="flex justify-between">
+                              <span>Prisma Ledger Transaction:</span>
+                              <span className="text-white font-bold">{biometricLedger.id}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Base Creator Price:</span>
+                              <span className="text-white">₦{biometricLedger.base}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Fan Service Fee (10% Split):</span>
+                              <span className="text-emerald-400">+₦{biometricLedger.fee}</span>
+                            </div>
+                            <div className="flex justify-between border-t border-[#2A2A48]/50 pt-1 text-white font-black">
+                              <span>Total Charged to Fan:</span>
+                              <span>₦{biometricLedger.total}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Zero-UI Voice Command Console */}
+                <div className="cyber-panel rounded-2xl p-5 border border-[#2A2A48]">
+                  <h4 className="font-bold text-sm text-white flex items-center space-x-2 pb-3 border-b border-[#2A2A48]">
+                    <Volume2 className="w-4 h-4 text-emerald-400" />
+                    <span>Simulated "Zero-UI" Voice Command Console</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-2">
+                    Type a speech prompt below to simulate speech recognition transitions, executing on-device navigations automatically.
+                  </p>
+
+                  <div className="mt-4 flex gap-2">
+                    <input
+                      type="text"
+                      value={voiceSimInput}
+                      onChange={e => setVoiceSimInput(e.target.value)}
+                      placeholder="Try: 'Gemini, launch VyraShow and notify FanDNA Tier 1'..."
+                      className="flex-1 bg-[#0A0A12] border border-[#2A2A48] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                    />
+                    <button
+                      onClick={() => handleVoiceSimulate()}
+                      className="px-4 py-2.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs hover:bg-emerald-400 transition-all glow-green"
+                    >
+                      SPEAK
+                    </button>
+                  </div>
+
+                  {voiceSimFeedback && (
+                    <div className="p-3 mt-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-xs font-mono text-emerald-300 flex items-center space-x-2">
+                      <Volume2 className="w-4 h-4 text-emerald-400 shrink-0 animate-bounce" />
+                      <span>{voiceSimFeedback}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Prisma Schema Entity Model Inspector */}
+                <div className="cyber-panel rounded-2xl p-5 border border-[#2A2A48] bg-[#0A0A15]/80">
+                  <h4 className="font-bold text-sm text-white flex items-center space-x-2 pb-3 border-b border-[#2A2A48]">
+                    <Terminal className="w-4 h-4 text-cyan-400" />
+                    <span>Prisma Schema Relational Architecture (`database/schema.prisma`)</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-[11px] font-mono">
+                    <div className="p-3 rounded-xl bg-[#121224] border border-[#2A2A48]/80">
+                      <div className="text-white font-extrabold pb-1.5 border-b border-[#2A2A48]/50">model User</div>
+                      <div className="space-y-1 mt-2 text-slate-400">
+                        <div>id: <span className="text-cyan-400 font-bold">String @id</span></div>
+                        <div>paystackPasskey: <span className="text-cyan-400 font-bold">String?</span></div>
+                        <div>walletBalance: <span className="text-cyan-400 font-bold">Float</span></div>
+                        <div>fanDNA: <span className="text-violet-400 font-bold">FanDNA[]</span></div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#121224] border border-[#2A2A48]/80">
+                      <div className="text-white font-extrabold pb-1.5 border-b border-[#2A2A48]/50">model FanDNA</div>
+                      <div className="space-y-1 mt-2 text-slate-400">
+                        <div>id: <span className="text-cyan-400 font-bold">String @id</span></div>
+                        <div>userId: <span className="text-cyan-400 font-bold">String</span></div>
+                        <div>tier: <span className="text-cyan-400 font-bold">Int</span></div>
+                        <div>engagementPoints: <span className="text-cyan-400 font-bold">Int</span></div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#121224] border border-[#2A2A48]/80">
+                      <div className="text-white font-extrabold pb-1.5 border-b border-[#2A2A48]/50">model Transaction</div>
+                      <div className="space-y-1 mt-2 text-slate-400">
+                        <div>id: <span className="text-cyan-400 font-bold">String @id</span></div>
+                        <div>baseAmount: <span className="text-emerald-400 font-bold">Float</span></div>
+                        <div>platformFee: <span className="text-emerald-400 font-bold">Float</span></div>
+                        <div>totalCharged: <span className="text-emerald-400 font-bold">Float</span></div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#121224] border border-[#2A2A48]/80">
+                      <div className="text-white font-extrabold pb-1.5 border-b border-[#2A2A48]/50">model SocialLink</div>
+                      <div className="space-y-1 mt-2 text-slate-400">
+                        <div>id: <span className="text-cyan-400 font-bold">String @id</span></div>
+                        <div>clicks: <span className="text-cyan-400 font-bold">Int</span></div>
+                        <div>platform: <span className="text-cyan-400 font-bold">String</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </main>

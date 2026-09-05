@@ -1,0 +1,187 @@
+// Prisma schema for the VYRA OS (v2.4 Lagos Cyberstage Alpha) Ecosystem
+// Synthesizes the core platform, FanDNA tiering, Paystack micro-transactions, and social links
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Standard database rule for VYRA
+  url      = "file:./vyra.db"
+}
+
+enum Role {
+  CREATOR
+  FAN
+}
+
+enum TxType {
+  PPV_UNLOCK
+  TIP
+  SUBSCRIPTION
+}
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id               String               @id @default(cuid())
+  username         String               @unique
+  email            String               @unique
+  role             Role                 @default(FAN)
+  walletBalance    Decimal              @default(0.00)
+  paystackPasskey  String?              // Stores device-bound WebAuthn biometric public key (base64/hex)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  // Creator profile configurations (Pillar 4)
+  bio              String?
+  avatarUrl        String?
+  bannerUrl        String?
+  themeName        String               @default("Neon Blue") // Neon Blue, Cyber Violet, Matrix Green, Acid Yellow
+
+  // Relations
+  vaultItems       VaultItem[]          @relation("CreatorVaultItems")
+  transactions     Transaction[]        @relation("UserTransactions")
+  fanDnaProfiles   FanDNA[]             @relation("FanProfiles")
+  fanDnaCustomers  FanDNA[]             @relation("CreatorFans")
+  socialLinks      SocialLink[]
+  connections      PlatformConnection[]
+  messages         Message[]
+  conversations    ConversationParticipant[]
+  referredTx       Transaction[]        @relation("ReferrerTransactions")
+}
+
+model VaultItem {
+  id           String        @id @default(cuid())
+  creatorId    String
+  title        String
+  description  String?
+  priceNaira   Decimal
+  isEncrypted  Boolean       @default(true)
+  contentUrl   String        // Encrypted URL pointing to premium asset
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Relations
+  creator      User          @relation("CreatorVaultItems", fields: [creatorId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model FanDNA {
+  id                  String   @id @default(cuid())
+  fanId               String
+  creatorId           String
+  tier                Int      @default(1) // 1: Standard, 2: Premium, 3: VIP
+  viralPoints         Int      @default(0) // Points earned from Revyralize shares
+  engagementScore     Int      @default(0) // Engagement tracking scale (0-100)
+  spendingScore       Int      @default(0) // Spending velocity score (0-100)
+  lastInteractionAt   DateTime @default(now())
+
+  // Relations
+  fan                 User     @relation("FanProfiles", fields: [fanId], references: [id], onDelete: Cascade)
+  creator             User     @relation("CreatorFans", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@unique([fanId, creatorId])
+}
+
+model Transaction {
+  id               String    @id @default(cuid())
+  buyerId          String
+  vaultItemId      String?
+  referrerId       String?   // Tracks fan referrals (Revyralize gamification)
+  baseAmount       Decimal   // Base amount transferred directly to Creator (100% of price)
+  platformFee      Decimal   // 5-10% service fee paid on the buyer-side
+  totalCharged     Decimal   // baseAmount + platformFee
+  referrerCut      Decimal   @default(0.00) // Micro-cuts distributed to referrers
+  paystackRef      String    @unique
+  type             TxType
+  status           TxStatus  @default(PENDING)
+  channel          String?   // card, bank, mobile_money, etc.
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  buyer            User      @relation("UserTransactions", fields: [buyerId], references: [id])
+  vaultItem        VaultItem? @relation(fields: [vaultItemId], references: [id])
+  referrer         User?     @relation("ReferrerTransactions", fields: [referrerId], references: [id])
+}
+
+model SocialLink {
+  id           String   @id @default(cuid())
+  userId       String
+  platform     String   // "instagram", "tiktok", "twitter", "onlyfans", "spotify", "custom"
+  name         String
+  url          String
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  clickCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PlatformConnection {
+  id           String   @id @default(cuid())
+  userId       String
+  platform     String   // onlyfans, fansly, tiktok, twitter
+  externalId   String
+  accessToken  String   // AES-256 encrypted access token
+  refreshToken String?  // AES-256 encrypted refresh token
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LinkAnalytics {
+  id           String   @id @default(cuid())
+  linkId       String
+  hashedIp     String
+  userAgent    String?
+  referrer     String?
+  createdAt    DateTime @default(now())
+}
+
+model Conversation {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime     @default(now())
+
+  // Relations
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  encryptedText  String       // AES-256 encrypted payload
+  mediaUrl       String?      // Optional encrypted media attachments
+  isEncrypted    Boolean      @default(true)
+  status         String       @default("SENT") // SENT, DELIVERED, READ
+  createdAt      DateTime     @default(now())
+
+  // Relations
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
